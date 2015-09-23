@@ -1,0 +1,115 @@
+CSCD18 - Fall 2015 - Assignment 1 Checklist/Grading sheet
+_____________________________________________________________________________
+
+Name: 
+Student ID:
+mathlab user name (UTSCid):
+
+(failure to provide name and student ID will cost you marks)
+_____________________________________________________________________________ 
+
+A. PLEASE ANSWER THE FOLLOWING QUESTIONS (your assignment will not be 
+   graded otherwise!)
+  
+1. I verify that I completed this assignment according to the 
+   UofT Code of Behaviour on Academic Matters found at
+   http://www.governingcouncil.utoronto.ca/policies/behaveac.htm
+
+   ___Yes   ___No
+
+
+2. I collaborated on this assignment with another student or borrowed 
+   code from another source 
+
+   ___Yes   ___No
+
+   If Yes, you must clearly note in your program which parts are 
+   common/borrowed and which are yours, failure to do so will be 
+   construed as plagiarism).
+
+   Properly noted code shared with someone else will receive a
+   reduced mark, but will *not* be construed as plagiarism.
+
+   If you checked yes, please supply:
+
+   Student name/Source: 
+
+______________________________________________________________________________
+
+B. PLACE AN (X) IN THE CORRESPONDING PLACE. For any partially completed 
+   code, please add a brief description of the corresponding item so 
+   your TA can consider it for part marks.
+   
+Description/value		Completed	Partial	    Not done	Mark
+
+* Add conttrols for the
+  variables that affect
+  Boid motion:
+  k_rule1, k_rule2, k_rule3,
+  k_rule0, r_rule2, r_rule3
+  and global rotation.
+  (5 marks)
+
+* Correctly implemented
+  (working!) Boid update
+  rule 1
+  (5 marks)
+
+* Correctly implemented
+  (working) Boid update
+  rule 2
+  (5 marks)
+
+* Correctly implemented
+  (working) Boid update
+  rule 3   
+  (5 marks)
+
+* Correctly implemented
+  (working) Boid update
+  rule 0 (Paco's rule)
+  (5 marks)
+
+* Correctly implemented
+  Boid position update
+  (5 marks)
+
+* Completed boid drawing
+  function with something
+  that is not a simple
+  sphere, single polygon,
+  or GLUT primitive shape.
+  (5 marks)
+
+* (TA assigned): Up to 5
+  marks for the REPORT
+
+* (TA assigned): Up to 5
+  marks for 'artistic merit'
+
+* (TA assigned): -5 to +5
+  marks for coding style
+  Negative marks are
+  'earned' by messy, confusing,
+  undocumented code.
+
+Total before Crunchy (T):	
+_____________________________________________________________________________ 
+
+C. ADD A SINGLE BULLET (*) FOR EACH CRUNCHY FEATURE ADDED, so your TA
+   can give extra credit for your extensions. Unlisted features will not
+   be graded!
+
+Feature						Extra credit
+
+*
+*
+*
+
+(add more * if needed)
+
+Extra credit (C):				
+
+_____________________________________________________________________________
+
+Grade for the programming part (T + C): ______ (out of 50) 
