@@ -388,8 +388,8 @@ void initGlui()
     /*control for global_rot*/    
     GLUI_Spinner *global_rot_spinner
           = glui->add_spinner("global_rot", GLUI_SPINNER_FLOAT, &global_rot);
-    k0_spinner->set_speed(5);
-    k0_spinner->set_float_limits(0, 360, GLUI_LIMIT_CLAMP);
+    global_rot_spinner->set_speed(5);
+    global_rot_spinner->set_float_limits(0, 360, GLUI_LIMIT_CLAMP);
 
     // Add "Quit" button
     glui->add_separator();
@@ -634,6 +634,11 @@ void updateBoid(int i)
  // Add at the top of this function any variables
  // needed.
  ///////////////////////////////////////////
+
+  float prev_velocity[3];
+  prev_velocity[0] = Boid_Velocity[i][0];
+  prev_velocity[1] = Boid_Velocity[i][1];
+  prev_velocity[2] = Boid_Velocity[i][2];
 
  ///////////////////////////////////////////
  // LEARNING OBJECTIVES: This part of the assignment
@@ -959,6 +964,9 @@ if (total_nearby_boids != 0) {
  // Vaid ranges:
  //   0 < k_rule0 < 1
  ///////////////////////////////////////////
+ Boid_Velocity[i][0] -= k_rule0 * prev_velocity[0];
+ Boid_Velocity[i][1] -= k_rule0 * prev_velocity[1];
+ Boid_Velocity[i][2] -= k_rule0 * prev_velocity[2];
 
  ///////////////////////////////////////////
  // QUESTION: Why add inertia at the end of

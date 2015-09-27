@@ -55,23 +55,23 @@ Description/value		        Completed	    Partial	    Not done	  Mark
   rule 1
   (5 marks)
 
-* Correctly implemented
+* Correctly implemented       X
   (working) Boid update
   rule 2
   (5 marks)
 
-* Correctly implemented
+* Correctly implemented       X
   (working) Boid update
   rule 3   
   (5 marks)
 
 * Correctly implemented
-  (working) Boid update
+  (working) Boid update       X
   rule 0 (Paco's rule)
   (5 marks)
 
 * Correctly implemented
-  Boid position update
+  Boid position update        X
   (5 marks)
 
 * Completed boid drawing
