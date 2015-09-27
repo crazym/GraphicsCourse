@@ -719,8 +719,6 @@ for (int j=0; j < nBoids; j++) {
 
     // if the distance from i to j is within the radius of r_rule1
     // include boid j when calculating the center of mass
-    float distance;
-    distance = 0;
     if (sqrt(pow(distance_Vector[0], 2) + pow(distance_Vector[1], 2) + pow(distance_Vector[2], 2)) <= r_rule1) {
       total_nearby_boids += 1;
       total_distance[0] += Boid_Location[j][0];
@@ -771,7 +769,22 @@ if (total_nearby_boids != 0) {
  //  0 <= k_rule2 <= 1
  ///////////////////////////////////////////
 
+for (int j=0; j < nBoids; j++) {
+  if (i != j) {
+    float V2[3];
+    V2[0] = Boid_Location[j][0] - Boid_Location[i][0];
+    V2[1] = Boid_Location[j][1] - Boid_Location[i][1];
+    V2[2] = Boid_Location[j][2] - Boid_Location[i][2];
 
+    // if the distance from i to j is within the radius of r_rule2
+    if (sqrt(pow(V2[0], 2) + pow(V2[1], 2) + pow(V2[2], 2)) <= r_rule2) {
+      // update the velocity of boid i 
+      Boid_Velocity[i][0] -= k_rule2 * V2[0];
+      Boid_Velocity[i][1] -= k_rule2 * V2[1];
+      Boid_Velocity[i][2] -= k_rule2 * V2[2];
+    }
+  }
+}
 
  ///////////////////////////////////////////
  //
