@@ -131,6 +131,8 @@ float k_rule0;
 float shapeness;
 float global_rot;
 
+double animation;
+
 // ***********  FUNCTION HEADER DECLARATIONS ****************
 // Initialization functions
 void initGlut(char* winName);
@@ -241,6 +243,8 @@ int main(int argc, char** argv)
     k_rule0=.25;
     shapeness=0;
     global_rot=0;
+
+    animation=0;
 
     // Invoke the standard GLUT main event loop
     glutMainLoop();
@@ -520,6 +524,10 @@ void WindowDisplay(void)
     // matrix.
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+
+    // set up angle accorfing to gloval_rot parameter from the UI
+    glRotatef(global_rot, 0, 1, 0);
+
 
     // Draw box bounding the viewing area
     glColor4f(.95,.95,.95,.95);
@@ -1088,47 +1096,61 @@ void drawBoid(int i)
  // marks for using these simple spheres as your
  // boid shapes.
 
- GLUquadric *my_quad;	// Define a quadric() object
-			// We'll talk about quadrics
-			// later! for now suffice it
-			// to say they are a family
-			// of parametric surfaces
-			// whose shape can be controlled
-			// by changing a couple parameters.
-			// Among the things you can do
-			// with quadrics are spheres,
-			// discs, and cylinders.
+  GLUquadric *my_quad;	// Define a quadric() object
+  		// We'll talk about quadrics
+  		// later! for now suffice it
+  		// to say they are a family
+  		// of parametric surfaces
+  		// whose shape can be controlled
+  		// by changing a couple parameters.
+  		// Among the things you can do
+  		// with quadrics are spheres,
+  		// discs, and cylinders.
 
- my_quad=gluNewQuadric();	// Create a new quadric
+  my_quad=gluNewQuadric();	// Create a new quadric
 
- // Remember the GL_MODELVIEW matrix that determines the
- // transformations that will be applied to objects
- // before drawing? well, we have only ONE of those, so
- // if we want different objects to be transformed in
- // different ways, we need to keep track of which
- // transformations are going to be applied to which
- // objects.
- //
- // In the case of simple spherical boids, all we need
- // to do is display them at the correct location,
- // but this location is different for each boid, so:
+  // Remember the GL_MODELVIEW matrix that determines the
+  // transformations that will be applied to objects
+  // before drawing? well, we have only ONE of those, so
+  // if we want different objects to be transformed in
+  // different ways, we need to keep track of which
+  // transformations are going to be applied to which
+  // objects.
+  //
+  // In the case of simple spherical boids, all we need
+  // to do is display them at the correct location,
+  // but this location is different for each boid, so:
 
- // Here I am setting the Boid's color to a fixed value,
- // you can use the Boid_Color[][] array instead if you
- // want to change boid colours yourself.
+  // Here I am setting the Boid's color to a fixed value,
+  // you can use the Boid_Color[][] array instead if you
+  // want to change boid colours yourself.
 
- glColor4f(1,.35,.1,1);	// This specifies colour as R,G,B,alpha.
-			// the alpha component specifies transparency.
-			// if alpha=1 the colour is completely opaque,
-			// if alpha=0 it is completely transparent
-			// (will be invisible!)
+  glColor4f(1,.35,.1,1);	// This specifies colour as R,G,B,alpha.
+  		// the alpha component specifies transparency.
+  		// if alpha=1 the colour is completely opaque,
+  		// if alpha=0 it is completely transparent
+  		// (will be invisible!)
 
- glPushMatrix();	// Save current transformation matrix
-			// Apply necessary transformations to this boid
+  glPushMatrix();	// Save current transformation matrix
+  		// Apply necessary transformations to this boid
   glTranslatef(Boid_Location[i][0],Boid_Location[i][1],Boid_Location[i][2]);
-  gluSphere(my_quad,.5,4,4);	// Draw this boid
- glPopMatrix();		// Restore transformation matrix so it's
-			// ready for the next boid.
+
+  // draw star shape 
+  glBegin (GL_LINE_LOOP); 
+    glVertex3f(1.9,3.0,0.0);
+    glVertex3f(0.0,2.1,0.0);
+    glVertex3f(-1.9,3.0,0.0);
+    glVertex3f(-1.6,0.9,0.0);
+    glVertex3f(-3.0,-0.7,0.0);
+    glVertex3f(-1.0,-1.1,0.0);
+    glVertex3f(0.0,-3.0,0.0);
+    glVertex3f(1.0,-1.1,0.0);
+    glVertex3f(3.0,-0.7,0.0);
+    glVertex3f(1.6,0.9,0.0);
+  glEnd();
+
+  glPopMatrix();		// Restore transformation matrix so it's
+  		// ready for the next boid.
 
  ///////////////////////////////////////////
  // CRUNCHY:
