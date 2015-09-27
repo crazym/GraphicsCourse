@@ -77,7 +77,7 @@ Description/value		        Completed	    Partial	    Not done	  Mark
 * Completed boid drawing
   function with something
   that is not a simple
-  sphere, single polygon,
+  sphere, single polygon,     X
   or GLUT primitive shape.
   (5 marks)
 

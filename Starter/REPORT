@@ -11,8 +11,11 @@ __________________________________________________________________
    you found easier, harder, and/or tricky to get right
 
 
+It took me a while to figure out how to test the rules defined in update_boids; but once you figured out how to do one rule, the rest were easy as you can just apply the same apprach to do the work.
 
+The boid_display were a bit tricky as I was not familiar about the GL library and didn't have an overall picture about what I could achieve with it. I spent a consirable amount of time to examine my ideas one by one to see wehther it is doable and ended with the star-shape boids.
 
+All the CRUNCHY stuff seem hard to me and I didn't not have the chance to look them up one by one, it will be great if we were offered more instruction rather than researching on our own.
 __________________________________________________________________
 2) Answers to questions from the code:
 
@@ -20,22 +23,22 @@ Re: Rule 1 - QUESTION:
  Is this the optimal way to implement this rule? can you see any problems or ways
  to improve this bit in terms of speed?
 
-
+It isn't very efficient to loop through every node in order to find the center of the mass, thus I think it is not optimal. It should work better if we can find a better way to locate the mass_center for each node.
 
 
 
 Re: Paco's Rule 0 - QUESTION:
  Why add inertia at the end of the velocity update and not at the beginning?
 
-
+The boid velocity would not change until we go through the rules to update it. It does not make sense to add inertia at the beginning as the velocity will be changing later and previous inertia setting will be erased and won't been as effective as doing it at the end.
 
 
 __________________________________________________________________
 3) Describe any //CRUNCHY: extensions you implemented
 
-
-
-
+* Add trails for each boids to show the last few positions as a trajectory
+* Add a moon near the top, and stars tend not to get close to the moo 
+(as their light is too weak compared to the moon and people won't be able to see them that way :P )
 
 __________________________________________________________________
 
@@ -44,10 +47,15 @@ __________________________________________________________________
 a) What is the time complexity of the boid update (in big Oh notation),
    justify.
 
+O(n^2)
 
+The complexity for a single update_boid() call is O(n), where n is the number of boids. We basically need to loop through all boids other than current one (the "i" boid), checking the distance between i and the boid and conducting the manipulation, which takes constant time, thus O(n*1) = O(n).
+
+We need to call update_boid() for all boids, therefore O(n*n) = O(n^2).
 
 b) What could you do to make the update more efficient?
 
+I was thinking about doing refactoring on distance calculation that has been done in every single rule check. We can build an array to store the distance between each boid and reuse the distance to reduce the time (but that would take more space).
 
 
 c) What is the greatest bottleneck of the program:
@@ -57,10 +65,14 @@ c) What is the greatest bottleneck of the program:
 
     Why is that? justify your answer.
 
+    I would say the boid display code. It takes time to understand how to make use of the GL library (and come out with a good idea on what to draw to make it look fancier!); while for boid update you can simply follow the same approach to address all rules once you figured one rule out.
 
-d) How would you adapt the idea behing Boids to swarms of running
+
+d) How would you adapt the idea behind Boids to swarms of running
    creatures (e.g. a herd of charging animals, an army of CGI
    monsters, a crowd of simulated humans walking). Think of the
    specific conditions you would need to add to the simulation
    that are different from your Boids implementation
 
+   * special case that one individual opt out from the mainstream
+   * each component might have different shapes and/or sizes
