@@ -347,29 +347,29 @@ void initGlui()
 //                                   ^  ^
 //    Min and max values ------------|--|
 
-    /* control for r_rule2 */
-    GLUI_Spinner *r2_spinner
-          = glui->add_spinner("r_rule2", GLUI_SPINNER_FLOAT, &r_rule2);
-    r2_spinner->set_speed(0.5);
-    r2_spinner->set_float_limits(0, 1, GLUI_LIMIT_CLAMP);
-
-    /* control for r_rule3 */
-    GLUI_Spinner *r3_spinner
-          = glui->add_spinner("r_rule3", GLUI_SPINNER_FLOAT, &r_rule3);
-    r3_spinner->set_speed(0.5);
-    r3_spinner->set_float_limits(0, 1, GLUI_LIMIT_CLAMP);
-
     /* control for k_rule1 */
     GLUI_Spinner *k1_spinner
           = glui->add_spinner("k_rule1", GLUI_SPINNER_FLOAT, &k_rule1);
     k1_spinner->set_speed(0.5);
     k1_spinner->set_float_limits(0, 1, GLUI_LIMIT_CLAMP);
 
+    /* control for r_rule2 */
+    GLUI_Spinner *r2_spinner
+          = glui->add_spinner("r_rule2", GLUI_SPINNER_FLOAT, &r_rule2);
+    r2_spinner->set_speed(0.5);
+    r2_spinner->set_float_limits(1, 15, GLUI_LIMIT_CLAMP);
+
     /* control for k_rule2 */
     GLUI_Spinner *k2_spinner
           = glui->add_spinner("k_rule2", GLUI_SPINNER_FLOAT, &k_rule2);
     k2_spinner->set_speed(0.5);
     k2_spinner->set_float_limits(0, 1, GLUI_LIMIT_CLAMP);
+
+    /* control for r_rule3 */
+    GLUI_Spinner *r3_spinner
+          = glui->add_spinner("r_rule3", GLUI_SPINNER_FLOAT, &r_rule3);
+    r3_spinner->set_speed(0.5);
+    r3_spinner->set_float_limits(10, 100, GLUI_LIMIT_CLAMP);
 
     /* control for k_rule3 */
     GLUI_Spinner *k3_spinner
@@ -383,7 +383,7 @@ void initGlui()
     k0_spinner->set_speed(0.5);
     k0_spinner->set_float_limits(0, 1, GLUI_LIMIT_CLAMP);
 
-    glui->add_separator()
+    glui->add_separator();
 
     /*control for global_rot*/    
     GLUI_Spinner *global_rot_spinner
@@ -704,8 +704,44 @@ void updateBoid(int i)
  // rule? can you see any problems or ways
  // to improve this bit in terms of speed?
  ///////////////////////////////////////////
+int total_nearby_boids = 0;
+float total_distance[3];
+total_distance[0] = 0;
+total_distance[1] = 0;
+total_distance[2] = 0;
 
+for (int j=0; j < nBoids; j++) {
+  if (i != j) {
+    float distance_Vector[3];
+    distance_Vector[0] = Boid_Location[j][0] - Boid_Location[i][0];
+    distance_Vector[1] = Boid_Location[j][1] - Boid_Location[i][1];
+    distance_Vector[2] = Boid_Location[j][2] - Boid_Location[i][2];
 
+    // if the distance from i to j is within the radius of r_rule1
+    // include boid j when calculating the center of mass
+    float distance;
+    distance = 0;
+    if (sqrt(pow(distance_Vector[0], 2) + pow(distance_Vector[1], 2) + pow(distance_Vector[2], 2)) <= r_rule1) {
+      total_nearby_boids += 1;
+      total_distance[0] += Boid_Location[j][0];
+      total_distance[1] += Boid_Location[j][1];
+      total_distance[2] += Boid_Location[j][2];
+    }
+  }
+}
+
+if (total_nearby_boids != 0) {  
+  float mass_center[3];
+  mass_center[0] = total_distance[0] / total_nearby_boids;
+  mass_center[1] = total_distance[1] / total_nearby_boids;
+  mass_center[2] = total_distance[2] / total_nearby_boids;
+
+  // update the velocity of boid i toward the center of mass 
+  // following the formula given in pseudo code by Conrad Parker
+  Boid_Velocity[i][0] += (mass_center[0] - Boid_Location[i][0]) * k_rule1;
+  Boid_Velocity[i][1] += (mass_center[1] - Boid_Location[i][1]) * k_rule1;
+  Boid_Velocity[i][2] += (mass_center[2] - Boid_Location[i][2]) * k_rule1;
+}
 
  ///////////////////////////////////////////
  //
@@ -886,6 +922,9 @@ void updateBoid(int i)
  // Finally (phew!) update the position
  // of this boid.
  ///////////////////////////////////////////
+Boid_Location[i][0] += Boid_Velocity[i][0];
+Boid_Location[i][1] += Boid_Velocity[i][1];
+Boid_Location[i][2] += Boid_Velocity[i][2];
 
  ///////////////////////////////////////////
  // CRUNCHY:
