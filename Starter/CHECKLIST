@@ -1,9 +1,9 @@
 CSCD18 - Fall 2015 - Assignment 1 Checklist/Grading sheet
 _____________________________________________________________________________
 
-Name: 
-Student ID:
-mathlab user name (UTSCid):
+Name: Maoting Zhang 
+Student ID: 999590633
+mathlab user name (UTSCid): zhangmao
 
 (failure to provide name and student ID will cost you marks)
 _____________________________________________________________________________ 
@@ -15,7 +15,7 @@ A. PLEASE ANSWER THE FOLLOWING QUESTIONS (your assignment will not be
    UofT Code of Behaviour on Academic Matters found at
    http://www.governingcouncil.utoronto.ca/policies/behaveac.htm
 
-   ___Yes   ___No
+   _Yes__Yes   ___No
 
 
 2. I collaborated on this assignment with another student or borrowed 
@@ -39,19 +39,19 @@ ______________________________________________________________________________
 B. PLACE AN (X) IN THE CORRESPONDING PLACE. For any partially completed 
    code, please add a brief description of the corresponding item so 
    your TA can consider it for part marks.
-   
-Description/value		Completed	Partial	    Not done	Mark
+    
+Description/value		        Completed	    Partial	    Not done	  Mark
 
 * Add conttrols for the
   variables that affect
   Boid motion:
-  k_rule1, k_rule2, k_rule3,
+  k_rule1, k_rule2, k_rule3,  X
   k_rule0, r_rule2, r_rule3
   and global rotation.
   (5 marks)
 
 * Correctly implemented
-  (working!) Boid update
+  (working!) Boid update      X
   rule 1
   (5 marks)
 
