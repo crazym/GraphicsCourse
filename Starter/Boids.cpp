@@ -814,6 +814,44 @@ for (int j=0; j < nBoids; j++) {
  // 0 <= k_rule3 <= 1
  ///////////////////////////////////////////
 
+total_nearby_boids = 0;
+float total_velocity[3];
+total_velocity[0] = 0;
+total_velocity[1] = 0;
+total_velocity[2] = 0;
+
+for (int j=0; j < nBoids; j++) {
+  if (i != j) {
+    float distance_Vector[3];
+    distance_Vector[0] = Boid_Location[j][0] - Boid_Location[i][0];
+    distance_Vector[1] = Boid_Location[j][1] - Boid_Location[i][1];
+    distance_Vector[2] = Boid_Location[j][2] - Boid_Location[i][2];
+
+    // if the distance from i to j is within the radius of r_rule1
+    // include boid j when calculating the center of mass
+    if (sqrt(pow(distance_Vector[0], 2) + pow(distance_Vector[1], 2) + pow(distance_Vector[2], 2)) <= r_rule3) {
+      total_nearby_boids += 1;
+      total_velocity[0] += Boid_Velocity[j][0];
+      total_velocity[1] += Boid_Velocity[j][1];
+      total_velocity[2] += Boid_Velocity[j][2];
+    }
+  }
+}
+
+if (total_nearby_boids != 0) {  
+  float average_velocity[3];
+  average_velocity[0] = total_velocity[0] / total_nearby_boids;
+  average_velocity[1] = total_velocity[1] / total_nearby_boids;
+  average_velocity[2] = total_velocity[2] / total_nearby_boids;
+
+  // update the velocity of boid i toward the center of mass 
+  // following the formula given in pseudo code by Conrad Parker
+  Boid_Velocity[i][0] += k_rule3 * average_velocity[0];
+  Boid_Velocity[i][1] += k_rule3 * average_velocity[1];
+  Boid_Velocity[i][2] += k_rule3 * average_velocity[2];
+}
+
+
  ///////////////////////////////////////////
  // Enforcing bounds on motion
  //
