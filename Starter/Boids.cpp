@@ -116,6 +116,9 @@ float Boid_Velocity[MAX_BOIDS][3];	// Boid position & velocity data
 float Boid_Color[MAX_BOIDS][3];	 	// RGB colour for each boid
 float *modelVertices;                   // Imported model vertices
 int n_vertices;                         // Number of model vertices
+int current_position[MAX_BOIDS];
+float past_positions[MAX_BOIDS][3];
+
 
 // *************** USER INTERFACE VARIABLES *****************
 int windowID;               // Glut window ID (for display)
@@ -225,6 +228,9 @@ int main(int argc, char** argv)
      Boid_Color[i][0]=.15;
      Boid_Color[i][1]=.15;
      Boid_Color[i][2]=1;
+
+     current_position[i] = 0;
+
     }
 
     // Initialize glut, glui, and opengl
@@ -1013,6 +1019,10 @@ if (Boid_Location[i][0]<-30.0 && Boid_Location[i][1] >30.0 && Boid_Location[i][1
   Boid_Velocity[i][2] -= 5.0;
 }
 
+// for trails
+ past_positions[i][0] = Boid_Location[i][0];
+ past_positions[i][1] = Boid_Location[i][1];
+ past_positions[i][2] = Boid_Location[i][2];
  ///////////////////////////////////////////
  //
  // TO DO:
@@ -1168,7 +1178,8 @@ void drawBoid(int i)
   		// Apply necessary transformations to this boid
   glTranslatef(Boid_Location[i][0],Boid_Location[i][1],Boid_Location[i][2]);
 
-  // draw star shape 
+  // draw star shape by plotting its vertices in a line loop so that they are connected
+  glColor4f(1.0, 1.0, 0.0, 0.75);
   glBegin (GL_LINE_LOOP); 
     glVertex3f(1.9,3.0,0.0);
     glVertex3f(0.0,2.1,0.0);
@@ -1181,9 +1192,6 @@ void drawBoid(int i)
     glVertex3f(3.0,-0.7,0.0);
     glVertex3f(1.6,0.9,0.0);
   glEnd();
-
-  glPopMatrix();		// Restore transformation matrix so it's
-  		// ready for the next boid.
 
  ///////////////////////////////////////////
  // CRUNCHY:
@@ -1212,6 +1220,39 @@ void drawBoid(int i)
  // awesome for a good bonus!
  //
  ///////////////////////////////////////////
+
+float trail_len = 50;
+// if (past_positions[i]) {
+  float x = (Boid_Location[i][0] - past_positions[i][0]) / float(trail_len);
+  float y = (Boid_Location[i][1] - past_positions[i][1]) / float(trail_len);
+  float z = (Boid_Location[i][2] - past_positions[i][2]) / float(trail_len);
+
+  // printf("currnet %f\n", Boid_Location[i][0]);
+  // printf("past %f\n", past_positions[i][0]);
+  // printf("past %f\n", past_positions[i][0] + trail_len*x);
+
+  // printf(" diff =%f\n", Boid_Location[i][0] - past_positions[i][0]);
+  // printf(" x =%f\n", x);
+  glBegin(GL_LINE_STRIP);
+    for (int j=0; j<=trail_len; j++){
+        // printf(" x =%f\n", x);
+        printf("past_pos = %f\n", Boid_Location[i][0] - j*x);
+        if (Boid_Location[i][0] - j*x == Boid_Location[i][0] - trail_len*x)
+          printf("%s\n", "True");
+        glTranslatef(Boid_Location[i][0], Boid_Location[i][1], Boid_Location[i][2]);
+        glVertex3f(Boid_Location[i][0] - j*x, Boid_Location[i][1]- j*y, Boid_Location[i][2]- j*z);
+        // glTranslatef(past_positions[i][0]+ j*x, past_positions[i][0] + j*y, past_positions[i][0] + j*z);
+        // glVertex3f(past_positions[i][0], past_positions[i][1], past_positions[i][2]);
+        // glVertex3f(past_positions[i][0]+ j*x, past_positions[i][0] + j*y, past_positions[i][0] + j*z);
+    }
+        // glVertex3f(Boid_Location[i][0], Boid_Location[i][1], Boid_Location[i][2]);
+  glEnd();
+// }
+
+
+
+glPopMatrix();    // Restore transformation matrix so it's
+    // ready for the next boid.
 
 }
 
