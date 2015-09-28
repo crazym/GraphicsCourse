@@ -235,14 +235,14 @@ int main(int argc, char** argv)
 
     // Initialize variables that control the boid updates
     r_rule1=15;
-    r_rule2=3;
+    r_rule2=15;
     r_rule3=25;
     k_rule1=.15;
-    k_rule2=.5;
+    k_rule2=.15;
     k_rule3=.15;
-    k_rule0=.25;
+    k_rule0=.85;
     shapeness=0;
-    global_rot=0;
+    global_rot=200;
 
     animation=0;
 
@@ -572,6 +572,16 @@ void WindowDisplay(void)
      glVertex3f(-50,-50,50);
      glVertex3f(-50,50,50);
     glEnd();
+
+
+    // draw the moon and move it to the upper corner  
+    GLdouble radius=10;
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+
+    glTranslatef(-40, 40, 40);
+    glutSolidSphere(radius,20,20); 
+    glPopMatrix();
 
     // Boid update and rendering happens below
     for (int i=0; i<nBoids; i++)
@@ -982,6 +992,27 @@ if (total_nearby_boids != 0) {
  //  beginning?
  ///////////////////////////////////////////
 
+
+////////////////////////////////////////////
+// CRUNCHY
+// Moon's Rule
+//
+// There is a moon near the upper corner (-40, 40, 40), 
+// and stars tend not to get close to the moon 
+// (as their light is too weak compared to the moon,
+// and people won't be able to see them if they get close! :P ) 
+// ////////////////////////////////////////
+
+// as long as the boid being within the cube that surronds the moon sphere 
+// (which is at (-40, 40, 40) and of radius 10)
+// change its velocity to the other direction and run away from the moon
+if (Boid_Location[i][0]<-30.0 && Boid_Location[i][1] >30.0 && Boid_Location[i][1] >30.0){
+
+  Boid_Velocity[i][1] -= 5.0;
+  Boid_Velocity[i][0] -= 5.0;
+  Boid_Velocity[i][2] -= 5.0;
+}
+
  ///////////////////////////////////////////
  //
  // TO DO:
@@ -1039,6 +1070,8 @@ Boid_Location[i][2] += Boid_Velocity[i][2];
  //   the REPORT.
  //
  ///////////////////////////////////////////
+
+
 
  return;
 }
@@ -1125,7 +1158,7 @@ void drawBoid(int i)
   // you can use the Boid_Color[][] array instead if you
   // want to change boid colours yourself.
 
-  glColor4f(1,.35,.1,1);	// This specifies colour as R,G,B,alpha.
+  glColor4f(1,1,0,1);	// This specifies colour as R,G,B,alpha.
   		// the alpha component specifies transparency.
   		// if alpha=1 the colour is completely opaque,
   		// if alpha=0 it is completely transparent

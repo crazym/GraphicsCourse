@@ -37,8 +37,8 @@ __________________________________________________________________
 3) Describe any //CRUNCHY: extensions you implemented
 
 * Add trails for each boids to show the last few positions as a trajectory
-* Add a moon near the top, and stars tend not to get close to the moo 
-(as their light is too weak compared to the moon and people won't be able to see them that way :P )
+* Add a moon near the upper corner, and stars tend not to get close to the moon 
+(as their light is too weak compared to the moon and people won't be able to see them if they get close! :P )
 
 __________________________________________________________________
 
