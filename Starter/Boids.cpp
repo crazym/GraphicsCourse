@@ -658,7 +658,27 @@ void updateBoid(int i)
  // Add at the top of this function any variables
  // needed.
  ///////////////////////////////////////////
+  int total_nearby_boids = 0;
+  float distance_Vector[3];
 
+  // for rule 1
+  float total_distance[3];
+  total_distance[0] = 0;
+  total_distance[1] = 0;
+  total_distance[2] = 0;
+  float mass_center[3];
+
+  // for rule 2
+  float V2[3];
+
+  // for rule 3
+  float total_velocity[3];
+  total_velocity[0] = 0;
+  total_velocity[1] = 0;
+  total_velocity[2] = 0;
+  float average_velocity[3];
+
+  //for rule 0
   float prev_velocity[3];
   prev_velocity[0] = Boid_Velocity[i][0];
   prev_velocity[1] = Boid_Velocity[i][1];
@@ -733,15 +753,10 @@ void updateBoid(int i)
  // rule? can you see any problems or ways
  // to improve this bit in terms of speed?
  ///////////////////////////////////////////
-int total_nearby_boids = 0;
-float total_distance[3];
-total_distance[0] = 0;
-total_distance[1] = 0;
-total_distance[2] = 0;
 
 for (int j=0; j < nBoids; j++) {
   if (i != j) {
-    float distance_Vector[3];
+    
     distance_Vector[0] = Boid_Location[j][0] - Boid_Location[i][0];
     distance_Vector[1] = Boid_Location[j][1] - Boid_Location[i][1];
     distance_Vector[2] = Boid_Location[j][2] - Boid_Location[i][2];
@@ -758,7 +773,6 @@ for (int j=0; j < nBoids; j++) {
 }
 
 if (total_nearby_boids != 0) {  
-  float mass_center[3];
   mass_center[0] = total_distance[0] / total_nearby_boids;
   mass_center[1] = total_distance[1] / total_nearby_boids;
   mass_center[2] = total_distance[2] / total_nearby_boids;
@@ -800,7 +814,7 @@ if (total_nearby_boids != 0) {
 
 for (int j=0; j < nBoids; j++) {
   if (i != j) {
-    float V2[3];
+    
     V2[0] = Boid_Location[j][0] - Boid_Location[i][0];
     V2[1] = Boid_Location[j][1] - Boid_Location[i][1];
     V2[2] = Boid_Location[j][2] - Boid_Location[i][2];
@@ -844,14 +858,8 @@ for (int j=0; j < nBoids; j++) {
  ///////////////////////////////////////////
 
 total_nearby_boids = 0;
-float total_velocity[3];
-total_velocity[0] = 0;
-total_velocity[1] = 0;
-total_velocity[2] = 0;
-
 for (int j=0; j < nBoids; j++) {
   if (i != j) {
-    float distance_Vector[3];
     distance_Vector[0] = Boid_Location[j][0] - Boid_Location[i][0];
     distance_Vector[1] = Boid_Location[j][1] - Boid_Location[i][1];
     distance_Vector[2] = Boid_Location[j][2] - Boid_Location[i][2];
@@ -868,7 +876,6 @@ for (int j=0; j < nBoids; j++) {
 }
 
 if (total_nearby_boids != 0) {  
-  float average_velocity[3];
   average_velocity[0] = total_velocity[0] / total_nearby_boids;
   average_velocity[1] = total_velocity[1] / total_nearby_boids;
   average_velocity[2] = total_velocity[2] / total_nearby_boids;
@@ -1019,10 +1026,12 @@ if (Boid_Location[i][0]<-30.0 && Boid_Location[i][1] >30.0 && Boid_Location[i][1
   Boid_Velocity[i][2] -= 5.0;
 }
 
-// for trails
+
+// record current position before the update for trails
  past_positions[i][0] = Boid_Location[i][0];
  past_positions[i][1] = Boid_Location[i][1];
  past_positions[i][2] = Boid_Location[i][2];
+
  ///////////////////////////////////////////
  //
  // TO DO:
@@ -1221,8 +1230,6 @@ void drawBoid(int i)
  //
  ///////////////////////////////////////////
 
-// note: somehow turned out to display trivial line segments trailing stars instead of path
-// don't have enough time to figure out why :(
 float trail_len = 50;
 if (past_positions[i]) {
   // get one unit of movement from last position

@@ -13,7 +13,7 @@ __________________________________________________________________
 
 It took me a while to figure out how to test the rules defined in update_boids; but once you figured out how to do one rule, the rest were easy as you can just apply the same apprach to do the work.
 
-The boid_display were a bit tricky as I was not familiar about the GL library and didn't have an overall picture about what I could achieve with it. I spent a consirable amount of time to examine my ideas one by one to see wehther it is doable and ended with the star-shape boids.
+The boid_display were a bit tricky as I was not familiar about the GL library and didn't have an overall picture about what I could achieve with it. I spent a consirable amount of time to examine my ideas one by one to see wehther it is doable and ended with the star-shape boids. In addition, it is hard to debug, all I could do is keep printing out the coordinates to locate the problem, any more efficient way?
 
 All the CRUNCHY stuff seem hard to me and I didn't not have the chance to look them up one by one, it will be great if we were offered more instruction rather than researching on our own.
 __________________________________________________________________
@@ -36,9 +36,9 @@ The boid velocity would not change until we go through the rules to update it. I
 __________________________________________________________________
 3) Describe any //CRUNCHY: extensions you implemented
 
-* Add trails for each boids to show the last few positions as a trajectory
 * Add a moon near the upper corner, and stars tend not to get close to the moon 
 (as their light is too weak compared to the moon and people won't be able to see them if they get close! :P )
+* Add trails for each boids to show the last few positions as a trajectory
 
 __________________________________________________________________
 
@@ -65,7 +65,7 @@ c) What is the greatest bottleneck of the program:
 
     Why is that? justify your answer.
 
-    I would say the boid display code. It takes time to understand how to make use of the GL library (and come out with a good idea on what to draw to make it look fancier!); while for boid update you can simply follow the same approach to address all rules once you figured one rule out.
+    I would say the boid display code. It takes time to understand how to make use of the GL library and locate the coordinates in the box (and come out with a good idea on what to draw to make it look fancier!); while for boid update you can simply follow the same approach to address all rules once you figured one rule out.
 
 
 d) How would you adapt the idea behind Boids to swarms of running
