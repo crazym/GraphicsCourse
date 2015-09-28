@@ -1221,35 +1221,25 @@ void drawBoid(int i)
  //
  ///////////////////////////////////////////
 
+// note: somehow turned out to display trivial line segments trailing stars instead of path
+// don't have enough time to figure out why :(
 float trail_len = 50;
-// if (past_positions[i]) {
+if (past_positions[i]) {
+  // get one unit of movement from last position
   float x = (Boid_Location[i][0] - past_positions[i][0]) / float(trail_len);
   float y = (Boid_Location[i][1] - past_positions[i][1]) / float(trail_len);
   float z = (Boid_Location[i][2] - past_positions[i][2]) / float(trail_len);
 
-  // printf("currnet %f\n", Boid_Location[i][0]);
-  // printf("past %f\n", past_positions[i][0]);
-  // printf("past %f\n", past_positions[i][0] + trail_len*x);
-
-  // printf(" diff =%f\n", Boid_Location[i][0] - past_positions[i][0]);
-  // printf(" x =%f\n", x);
+  // draw movements as LINE_STRIP from current position to past_position
   glBegin(GL_LINE_STRIP);
     for (int j=0; j<=trail_len; j++){
-        // printf(" x =%f\n", x);
-        printf("past_pos = %f\n", Boid_Location[i][0] - j*x);
-        if (Boid_Location[i][0] - j*x == Boid_Location[i][0] - trail_len*x)
-          printf("%s\n", "True");
+        glPushMatrix();
         glTranslatef(Boid_Location[i][0], Boid_Location[i][1], Boid_Location[i][2]);
         glVertex3f(Boid_Location[i][0] - j*x, Boid_Location[i][1]- j*y, Boid_Location[i][2]- j*z);
-        // glTranslatef(past_positions[i][0]+ j*x, past_positions[i][0] + j*y, past_positions[i][0] + j*z);
-        // glVertex3f(past_positions[i][0], past_positions[i][1], past_positions[i][2]);
-        // glVertex3f(past_positions[i][0]+ j*x, past_positions[i][0] + j*y, past_positions[i][0] + j*z);
+        glPopMatrix();
     }
-        // glVertex3f(Boid_Location[i][0], Boid_Location[i][1], Boid_Location[i][2]);
   glEnd();
-// }
-
-
+}
 
 glPopMatrix();    // Restore transformation matrix so it's
     // ready for the next boid.
