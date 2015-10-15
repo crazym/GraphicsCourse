@@ -1,0 +1,17 @@
+sudo apt-get install lib3ds-dev
+sudo apt-get install freeglut3 freeglut3-dev
+* sudo apt-get install build-essential
+* sudo apt-get install binutils-gold
+
+http://stackoverflow.com/questions/16710047/usr-bin-ld-cannot-find-lnameofthelibrary
+
+http://www.codeproject.com/Questions/274557/skipping-incompatible-libSDL-a-when-searching-for
+
+minty@minty-HP:~/CSCD18/a1(master) $ ./my_compile.sh 
+/usr/bin/ld: skipping incompatible .//libglui.so when searching for -lglui
+/usr/bin/ld: skipping incompatible /home/minty/CSCD18/a1/libglui.so when searching for -lglui
+/usr/bin/ld: cannot find -lglui
+
+found reason is libglui.so being 64-bit while my pc is in 32-bit:
+
+therefore, search for deb file for libglui-dev and libgluic2c(prerequisite) and install
