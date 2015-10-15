@@ -1,0 +1,68 @@
+-------------------------------------
+Assignment 2 Checklist/Grading sheet
+-------------------------------------
+
+Name: 
+Student ID:
+
+-----------------------------------------------------------------------------------------
+A. PLEASE ANSWER THE FOLLOWING QUESTIONS (your assignment will not be graded otherwise!)
+
+  
+1. I verify that I completed this assignment according to the 
+   Academic Honesty policy stated in 
+   http://www.cs.toronto.edu/~ls/teaching08.html
+
+   ___Yes   ___No
+
+
+2. I collaborated on this assignment with another student or borrowed code from another
+   source (the penalties/grades will be assesed according to the policy stated in 
+   http://www.cs.brown.edu/~ls/teaching08.html)
+
+   ___Yes   ___No
+
+   If you checked yes, please supply the following
+
+       Student name/Source: 
+       Portion(s) of assignment completed by that student (see checklist below)
+
+-----------------------------------------------------------------------------------------
+
+B. PLACE AN (X) IN FRONT OF PORTIONS OF THE ASSIGNMENT THAT YOU COMPLETED IN FULL.
+   
+   If a portion of the assignment was not completed fully, please provide 
+   additional information so that we can determine whether or not you are eligible
+   for partial credit. THE MORE INFORMATION YOU SUPPLY (EG. FILE WHICH CONTAINS
+   PARTIAL CODE, FUNCTION NAME, ETC, SUGGESTIONS ON WHERE AND WHAT TO LOOK FOR IN 
+   YOUR PARTIAL IMPLEMENTATION, DETAILED COMMENTS IN YOUR CODE, ETC) THE MORE LIKELY IT IS 
+   WE WILL BE ABLE TO MAKE AN ACCURATE ASSESSMENT
+
+   
+___   (10 points) Part 2a     L-system implementation
+                  
+___   (10 points) Part 2b     Rendering of plants (including your leafs & flowers)
+
+___   (2.5 points) Part 2c    GUI controls (for global variables)
+
+___   (15 points) Part 2d     Surface grid generation (including correct normals)
+                              and rendering (illumination must work properly)
+                  
+___   (2.5 points) Part 2g    Checklist completed
+
+___   (10 points)             Artistic merit - make it look good!
+
+      Crunchy bonus part - Bonus depends on how good your extension actually is
+
+___   (up to 10 points) Part 2f     Animation of plant growth
+
+___   (up to 5 points)  Part 2g	    Texture mapping on leaves and petals
+
+___   (up to 15 points) Part 2h     Leafs and flowers become Boids!
+
+___   (TA discretion)		    Other crunchy stuff
+
+Total for the Plant Life programming assignment:      / 50
+(any points above 50 will be applied to your written assignment mark)
+
+-------------------------------------------------------------------------------- 
