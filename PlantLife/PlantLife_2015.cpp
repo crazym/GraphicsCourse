@@ -146,6 +146,8 @@ void RenderPlant(struct PlantNode *p);
 void StemSection();
 void LeafSection();
 void FlowerSection();
+void FlowerSectionDrawPetal(void);
+void FlowerSectionDrawBud(float cx, float cy, float r, int num_segments);
 void AnimatedRenderPlant(void);
 
 // Surface generation
@@ -508,6 +510,16 @@ void FlowerSection()
  /////////////////////////////////////////////////////////////
  // DO YOUR DRAWING WORK HERE!!
  /////////////////////////////////////////////////////////////
+ glScalef(0.3, 0.3, 0.3);
+  for (int i=0; i <8; i++){
+    glRotatef(45*i, 0, 0, 1);
+    FlowerSectionDrawPetal();
+  }
+  glBegin(GL_POLYGON);
+    glColor3f(1,1,.1);
+    FlowerSectionDrawBud(0, 0, 0.6, 8);
+  glEnd();
+
 
  // Disable texture mapping
  if (textures_on)
@@ -516,6 +528,38 @@ void FlowerSection()
   glDisable(GL_TEXTURE_2D);
   glDisable (GL_BLEND);
  }
+}
+
+void FlowerSectionDrawPetal(void)
+{ 
+  glBegin (GL_POLYGON); 
+    glColor3f(0.8,0.3,0.4);
+    // glScalef(0.4, 0.4, 0.4); 
+
+    glVertex3f(0.0,0.0,0.0);
+    glVertex3f(0.5,0.6,0.0);
+    glVertex3f(0.0,1.2,0.0);
+    glVertex3f(-0.5,0.6,0.0);
+
+  glEnd();
+}
+
+// try to draw bud with a polygon approximating a circle
+// code src: http://stackoverflow.com/questions/22444450/drawing-circle-with-opengl
+void FlowerSectionDrawBud(float cx, float cy, float r, int num_segments)
+{
+    glBegin(GL_LINE_LOOP);
+    for(int ii = 0; ii < num_segments; ii++)
+    {
+        float theta = 2.0f * 3.1415926f * float(ii) / float(num_segments);//get the current angle
+
+        float x = r * cosf(theta);//calculate the x component
+        float y = r * sinf(theta);//calculate the y component
+
+        glVertex2f(x + cx, y + cy);//output vertex
+
+    }
+    glEnd();
 }
 
 void FreePlant(struct PlantNode *p)
