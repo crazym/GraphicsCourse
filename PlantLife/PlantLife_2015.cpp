@@ -440,6 +440,19 @@ void LeafSection(void)
  ///////////////////////////////////////////////////////////
  // DO YOUR DRAWING WORK HERE!!!!
  ///////////////////////////////////////////////////////////
+  glColor3f(0.1,0.9,0.1); 
+  glScalef(0.3, 0.3, 0.3);
+  glBegin(GL_POLYGON);
+  glVertex3f(0.0,0.0, 0);
+  glVertex3f(0.8,0.7, 0);
+  glVertex3f(1.1,1.8, 0);
+  glVertex3f(0.8,2.8, 0);
+  glVertex3f(0.0,3.8, 0);
+  glVertex3f(-0.8,2.8, 0);
+  glVertex3f(-1.1,1.8, 0);
+  glVertex3f(-0.8,0.7, 0);
+  glEnd();
+
 
  // Disable texture mapping
  if (textures_on)
