@@ -20,11 +20,13 @@ A. PLEASE ANSWER THE FOLLOWING QUESTIONS (your assignment will not be graded oth
    source (the penalties/grades will be assesed according to the policy stated in 
    http://www.cs.brown.edu/~ls/teaching08.html)
 
-   ___Yes   ___No
+   _Yes__Yes   ___No
 
    If you checked yes, please supply the following
 
        Student name/Source: 
+       http://stackoverflow.com/questions/22444450/drawing-circle-with-opengl
+
        Portion(s) of assignment completed by that student (see checklist below)
 
 -----------------------------------------------------------------------------------------
@@ -41,9 +43,9 @@ B. PLACE AN (X) IN FRONT OF PORTIONS OF THE ASSIGNMENT THAT YOU COMPLETED IN FUL
    
 _X_   (10 points) Part 2a     L-system implementation
                   
-___   (10 points) Part 2b     Rendering of plants (including your leafs & flowers)
+_X_   (10 points) Part 2b     Rendering of plants (including your leafs & flowers)
 
-___   (2.5 points) Part 2c    GUI controls (for global variables)
+_X_   (2.5 points) Part 2c    GUI controls (for global variables)
 
 ___   (15 points) Part 2d     Surface grid generation (including correct normals)
                               and rendering (illumination must work properly)

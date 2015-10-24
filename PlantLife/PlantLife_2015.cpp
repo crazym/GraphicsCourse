@@ -335,11 +335,11 @@ void RenderPlant(struct PlantNode *p)
       RenderPlant(p->left);
       glPopMatrix();
 
+    } else { // draw flowers or leaves at the end of these last-level stems,
+      glPushMatrix();
+      LeafSection();
+      glPopMatrix();
     }
-    // TO DO 
-    // else { // draw flowers or leaves at the end of these last-level stems,
-
-    // }
 
     if (p->right) {
       glScalef(p->right->scl, p->right->scl, p->right->scl);
@@ -351,11 +351,11 @@ void RenderPlant(struct PlantNode *p)
       RenderPlant(p->right);
       glPopMatrix();
 
+    } else { // draw flowers or leaves at the end of these last-level stems,
+      glPushMatrix();
+      FlowerSection();
+      glPopMatrix();
     }
-    // TO DO 
-    // else { // draw flowers or leaves at the end of these last-level stems,
-
-    // }
  }
  else if (p->type == 'c') {
   // glScalef()
@@ -389,6 +389,7 @@ void LeafSection(void)
  glColor3f(.25,1,.1);
  StemSection();
  // Perhaps you should translate now? :)
+ glTranslatef(0, 0, 1);
 
  ////////////////////////////////////////////////////////////
  // TO DO: Draw your own leaf design.
@@ -469,6 +470,9 @@ void LeafSection(void)
 void FlowerSection()
 {
  // Draws a flower perpendicular to the current local Z axis
+ glColor3f(.25,1,.1);
+ StemSection();
+ glTranslatef(0, 0, 1);
 
  /////////////////////////////////////////////////////////////
  // TO DO: Add code to draw a flower,
@@ -984,6 +988,19 @@ void initGlui()
     //        global_Z must be in [-180, 180]
     //        global_scale must be in [0, 20]
     ///////////////////////////////////////////////////////////
+    // add a Spinner for Z axis
+    GLUI_Spinner *z_spinner 
+      = glui->add_spinner("global_Z", GLUI_SPINNER_FLOAT, &global_Z);   
+ 
+    z_spinner->set_speed(5.0);
+    z_spinner->set_float_limits(-180, 180, GLUI_LIMIT_CLAMP);
+
+    // add a Spinner for Scale
+    GLUI_Spinner *scale_spinner 
+      = glui->add_spinner("global_scale", GLUI_SPINNER_FLOAT, &global_scale);    
+ 
+    scale_spinner->set_speed(1.0);
+    scale_spinner->set_float_limits(0, 20, GLUI_LIMIT_CLAMP);
 
     // Add "Quit" button
     glui->add_separator();
