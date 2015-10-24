@@ -219,30 +219,33 @@ void RenderSurfaceGrid(void)
  /////////////////////////////////////////////////////////////////////////
 
   // Draw the surface grid
+  // for each vertex:
+  // set its normal to allow correct highlight & shadow
+  // then set the terrain color with regard to its height  
   for (int i=0; i<GRID_RESOLVE-1; i++){
     for (int j=0; j<GRID_RESOLVE-1; j++){
-      /* set the terrain color with regard to their height */
-
       glBegin(GL_TRIANGLE_STRIP);
-        // glNormal3f(GroundNormals[i][j][0],GroundNormals[i][j][1],GroundNormals[i][j][2]);
         // draw each sqare grid by 2 triangles (upper left and lower right) to ensure flatness
         // (i,    j) --- (i+1, j)
         //   |        /    |
         //   |       /     |
         //   |      /      | 
         // (i+1,j+1) --- (i+1, j+1)
-          
+        glNormal3f(GroundNormals[i][j][0], GroundNormals[i][j][1], GroundNormals[i][j][2]);  
         glColor3f(.6*(GroundXYZ[i][j][2]+1), .5*(GroundXYZ[i][j][2]+1), .3*(GroundXYZ[i][j][2]+1));
         glVertex3f(GroundXYZ[i][j][0], GroundXYZ[i][j][1], GroundXYZ[i][j][2]);
 
+        glNormal3f(GroundNormals[i+1][j][0], GroundNormals[i+1][j][1], GroundNormals[i+1][j][2]);
         glColor3f(.6*(GroundXYZ[i+1][j][2]+1), .5*(GroundXYZ[i+1][j][2]+1), .3*(GroundXYZ[i+1][j][2]+1));
         // glColor3f(.6*GroundXYZ[i+1][j][2], .5*GroundXYZ[i+1][j][2], .3*GroundXYZ[i+1][j][2]);
         glVertex3f(GroundXYZ[i+1][j][0], GroundXYZ[i+1][j][1], GroundXYZ[i+1][j][2]);
         
+        glNormal3f(GroundNormals[i][j+1][0], GroundNormals[i][j+1][1], GroundNormals[i][j+1][2]);
         glColor3f(.6*(GroundXYZ[i][j+1][2]+1), .5*(GroundXYZ[i][j+1][2]+1), .3*(GroundXYZ[i][j+1][2]+1));
         // glColor3f(.6*GroundXYZ[i][j+1][2], .5*GroundXYZ[i][j+1][2], .3*GroundXYZ[i][j+1][2]);
         glVertex3f(GroundXYZ[i][j+1][0], GroundXYZ[i][j+1][1], GroundXYZ[i][j+1][2]);
         
+        glNormal3f(GroundNormals[i+1][j+1][0], GroundNormals[i+1][j+1][1], GroundNormals[i+1][j+1][2]);
         glColor3f(.6*(GroundXYZ[i+1][j+1][2]+1), .5*(GroundXYZ[i+1][j+1][2]+1), .3*(GroundXYZ[i+1][j+1][2]+1));
         // glColor3f(.6*GroundXYZ[i+1][j+1][2], .5*GroundXYZ[i+1][j+1][2], .3*GroundXYZ[i+1][j+1][2]);
         glVertex3f(GroundXYZ[i+1][j+1][0], GroundXYZ[i+1][j+1][1], GroundXYZ[i+1][j+1][2]);
@@ -343,9 +346,11 @@ void MakeSurfaceGrid(void)
  for (int i=0; i<GRID_RESOLVE; i++)
   for (int j=0; j<GRID_RESOLVE; j++)
   {
-   // Obtain two vectors on the surface the point at GroundXYZ[i][j][] is located
+      // Obtain two vectors on the surface the point at GroundXYZ[i][j][] is located
+      // (by calculating GroundXYZ[i+1][j] and GroundXYZ[i][j+1])
       if (i==GRID_RESOLVE-1 && j==GRID_RESOLVE-1){
-        // when point is the corner (GRID_RESOLVE-1, GRID_RESOLVE-1)
+        // at (GRID_RESOLVE-1, GRID_RESOLVE-1)
+        // change direction since there are not forwarding vector
         vx = GroundXYZ[i-1][j][0] - GroundXYZ[i][j][0];
         vy = GroundXYZ[i-1][j][1] - GroundXYZ[i][j][1];
         vz = GroundXYZ[i-1][j][2] - GroundXYZ[i][j][2];
@@ -354,7 +359,7 @@ void MakeSurfaceGrid(void)
         wz = GroundXYZ[i][j-1][2] - GroundXYZ[i][j][2];
       }
       else if (i==GRID_RESOLVE-1){
-        // when point is on the edge i = GRID_RESOLVE-1
+        // along i = GRID_RESOLVE-1
         vx = GroundXYZ[i-1][j][0] - GroundXYZ[i][j][0];
         vy = GroundXYZ[i-1][j][1] - GroundXYZ[i][j][1];
         vz = GroundXYZ[i-1][j][2] - GroundXYZ[i][j][2];
@@ -363,7 +368,7 @@ void MakeSurfaceGrid(void)
         wz = GroundXYZ[i][j+1][2] - GroundXYZ[i][j][2];
       }
       else if (j==GRID_RESOLVE-1){
-        // when point is on the edge j = GRID_RESOLVE-1
+        // along GRID_RESOLVE-1
         vx = GroundXYZ[i+1][j][0] - GroundXYZ[i][j][0];
         vy = GroundXYZ[i+1][j][1] - GroundXYZ[i][j][1];
         vz = GroundXYZ[i+1][j][2] - GroundXYZ[i][j][2];
@@ -372,7 +377,7 @@ void MakeSurfaceGrid(void)
         wz = GroundXYZ[i][j-1][2] - GroundXYZ[i][j][2];
       }
       else{
-        // When point is inside the boarder
+        // inside the boarder
         vx = GroundXYZ[i+1][j][0] - GroundXYZ[i][j][0];
         vy = GroundXYZ[i+1][j][1] - GroundXYZ[i][j][1];
         vz = GroundXYZ[i+1][j][2] - GroundXYZ[i][j][2];
@@ -384,9 +389,9 @@ void MakeSurfaceGrid(void)
    computeNormal(&vx,&vy,&vz,wx,wy,wz);
 
    // And store it...
-   GroundNormals[i][j][0]=0;    // <----- HEY!
-   GroundNormals[i][j][1]=0;    // <----- REPLACE THESE COMPONENTS with the correct
-   GroundNormals[i][j][2]=1;    // <----- normal for your surface!
+   GroundNormals[i][j][0]=vx;    // <----- HEY!
+   GroundNormals[i][j][1]=vy;    // <----- REPLACE THESE COMPONENTS with the correct
+   GroundNormals[i][j][2]=vz;    // <----- normal for your surface!
   }
 }
 
@@ -547,6 +552,8 @@ void LeafSection(void)
  ///////////////////////////////////////////////////////////
  // DO YOUR DRAWING WORK HERE!!!!
  ///////////////////////////////////////////////////////////
+  // set normal to the current Z-axis
+  glNormal3f(0, 0, 1);
   glColor3f(0.1,0.9,0.1); 
   glScalef(0.3, 0.3, 0.3);
   glBegin(GL_POLYGON);
@@ -618,7 +625,9 @@ void FlowerSection()
  /////////////////////////////////////////////////////////////
  // DO YOUR DRAWING WORK HERE!!
  /////////////////////////////////////////////////////////////
- glScalef(0.3, 0.3, 0.3);
+  // set normal to the current Z-axis
+  glNormal3f(0, 0, 1);
+  glScalef(0.3, 0.3, 0.3);
   for (int i=0; i <8; i++){
     glRotatef(45*i, 0, 0, 1);
     FlowerSectionDrawPetal();
