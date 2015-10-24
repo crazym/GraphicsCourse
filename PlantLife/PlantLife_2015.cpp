@@ -222,7 +222,6 @@ void RenderSurfaceGrid(void)
   for (int i=0; i<GRID_RESOLVE-1; i++){
     for (int j=0; j<GRID_RESOLVE-1; j++){
       /* set the terrain color with regard to their height */
-      glColor3f(.6*(GroundXYZ[i][j][2]+1), .5*(GroundXYZ[i][j][2]+1), .3*(GroundXYZ[i][j][2]+1));
 
       glBegin(GL_TRIANGLE_STRIP);
         // glNormal3f(GroundNormals[i][j][0],GroundNormals[i][j][1],GroundNormals[i][j][2]);
@@ -232,9 +231,20 @@ void RenderSurfaceGrid(void)
         //   |       /     |
         //   |      /      | 
         // (i+1,j+1) --- (i+1, j+1)
+          
+        glColor3f(.6*(GroundXYZ[i][j][2]+1), .5*(GroundXYZ[i][j][2]+1), .3*(GroundXYZ[i][j][2]+1));
         glVertex3f(GroundXYZ[i][j][0], GroundXYZ[i][j][1], GroundXYZ[i][j][2]);
+
+        glColor3f(.6*(GroundXYZ[i+1][j][2]+1), .5*(GroundXYZ[i+1][j][2]+1), .3*(GroundXYZ[i+1][j][2]+1));
+        // glColor3f(.6*GroundXYZ[i+1][j][2], .5*GroundXYZ[i+1][j][2], .3*GroundXYZ[i+1][j][2]);
         glVertex3f(GroundXYZ[i+1][j][0], GroundXYZ[i+1][j][1], GroundXYZ[i+1][j][2]);
+        
+        glColor3f(.6*(GroundXYZ[i][j+1][2]+1), .5*(GroundXYZ[i][j+1][2]+1), .3*(GroundXYZ[i][j+1][2]+1));
+        // glColor3f(.6*GroundXYZ[i][j+1][2], .5*GroundXYZ[i][j+1][2], .3*GroundXYZ[i][j+1][2]);
         glVertex3f(GroundXYZ[i][j+1][0], GroundXYZ[i][j+1][1], GroundXYZ[i][j+1][2]);
+        
+        glColor3f(.6*(GroundXYZ[i+1][j+1][2]+1), .5*(GroundXYZ[i+1][j+1][2]+1), .3*(GroundXYZ[i+1][j+1][2]+1));
+        // glColor3f(.6*GroundXYZ[i+1][j+1][2], .5*GroundXYZ[i+1][j+1][2], .3*GroundXYZ[i+1][j+1][2]);
         glVertex3f(GroundXYZ[i+1][j+1][0], GroundXYZ[i+1][j+1][1], GroundXYZ[i+1][j+1][2]);
       glEnd();
     }
@@ -271,7 +281,9 @@ void MakeSurfaceGrid(void)
  /////////////////////////////////////////////////////////////////////////
  double side;
  double vx,vy,vz,wx,wy,wz;
-
+ double v, d, a, b, c; // for terrian generation algorithm
+ double displacement = 0.1;
+ int iterations = 50;
  // Assign surface heights
  side=15;				// Width of the surface - X and Y coordinates
  					// will have values in [-side/2, side/2]
@@ -283,10 +295,43 @@ void MakeSurfaceGrid(void)
   {
    GroundXYZ[i][j][0]=(-side*.5)+(i*(side/GRID_RESOLVE));
    GroundXYZ[i][j][1]=(-side*.5)+(j*(side/GRID_RESOLVE));
-   GroundXYZ[i][j][2] = sin(GroundXYZ[i][j][0])+cos(GroundXYZ[i][j][1])+ 
-    2*exp(-(GroundXYZ[i][j][0]*GroundXYZ[i][j][0]+
-      GroundXYZ[i][j][1]*GroundXYZ[i][j][1]));
+   // initialize to zero height
+   GroundXYZ[i][j][2]=0.7;
+   // GroundXYZ[i][j][2] = sin(GroundXYZ[i][j][0])+cos(GroundXYZ[i][j][1])+ 
+   //  2*exp(-(GroundXYZ[i][j][0]*GroundXYZ[i][j][0]+
+   //    GroundXYZ[i][j][1]*GroundXYZ[i][j][1]));
   }
+
+  // Algorithm: The Fault Algorithm
+  // alter height of points along one side of a random line across surface and iterate
+  // Reference http://www.lighthouse3d.com/opengl/terrain/index.php3?fault
+  for (int n=0; n< iterations; n++){
+    v = drand48()*side;
+    a = sin(v);
+    b = cos(v);
+    d = sqrt(2) * side;
+    c = drand48()*d - d/2;
+    
+    // alter displacement factor for better performance:
+    // drop linearly the displacement factor from iteration 1 for first half of iterations,
+    // and then just keep it constant for the rest
+    double displacement_i = displacement;
+    if (n < iterations/2) {
+      displacement_i = displacement + (iterations / 2) * (displacement - displacement_i);
+    }
+
+    for (int i=0; i<GRID_RESOLVE; i++)
+     for (int j=0; j<GRID_RESOLVE; j++)
+     {
+        // if point is at the left side of the line, decrease; otherwise increase
+        if (a*GroundXYZ[i][j][0] + b*GroundXYZ[i][j][1] - c > 0) {
+          GroundXYZ[i][j][2] -= displacement_i;
+        } else {
+          GroundXYZ[i][j][2] += displacement_i;
+        }
+     }
+  }
+
 
  // Compute normals at each vertex
  // Remember we talked about how to compute the normal for a triangle in lecture. You
@@ -299,7 +344,7 @@ void MakeSurfaceGrid(void)
   for (int j=0; j<GRID_RESOLVE; j++)
   {
    // Obtain two vectors on the surface the point at GroundXYZ[i][j][] is located
-         if (i==GRID_RESOLVE-1 && j==GRID_RESOLVE-1){
+      if (i==GRID_RESOLVE-1 && j==GRID_RESOLVE-1){
         // when point is the corner (GRID_RESOLVE-1, GRID_RESOLVE-1)
         vx = GroundXYZ[i-1][j][0] - GroundXYZ[i][j][0];
         vy = GroundXYZ[i-1][j][1] - GroundXYZ[i][j][1];
@@ -957,7 +1002,7 @@ int main(int argc, char** argv)
     }
 
     // Intialize global transformation variables and GLUI
-    global_Z=0;
+    global_Z=-4;
     global_scale=15;
     glui->sync_live();
 
