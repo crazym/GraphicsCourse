@@ -217,6 +217,24 @@ void RenderSurfaceGrid(void)
  //       Don't forget to specify the normal at each vertex. Otherwise
  //       your surface won't be properly illuminated
  /////////////////////////////////////////////////////////////////////////
+
+  // Draw the surface grid
+  for (int i=1; i<GRID_RESOLVE; i++){
+    for (int j=1; j<GRID_RESOLVE; j++){
+      /* set the color of the terrain */
+      glColor3f(.4*(GroundXYZ[i][j][2]+1), .4*(GroundXYZ[i][j][2]+1), .4*(GroundXYZ[i][j][2]+1));
+
+      glBegin(GL_QUADS);
+        // Normal for light effect
+        glNormal3f(GroundNormals[i][j][0],GroundNormals[i][j][1],GroundNormals[i][j][2]);
+        // Set each sqare grid to 2 triangles
+        glVertex3f(GroundXYZ[i-1][j][0], GroundXYZ[i-1][j][1], GroundXYZ[i-1][j][2]);
+        glVertex3f(GroundXYZ[i][j][0], GroundXYZ[i][j][1], GroundXYZ[i][j][2]);
+        glVertex3f(GroundXYZ[i][j-1][0], GroundXYZ[i][j-1][1], GroundXYZ[i][j-1][2]);
+        glVertex3f(GroundXYZ[i-1][j-1][0], GroundXYZ[i-1][j-1][1], GroundXYZ[i-1][j-1][2]);
+      glEnd();
+    }
+  }
 }
 
 void MakeSurfaceGrid(void)
@@ -261,7 +279,7 @@ void MakeSurfaceGrid(void)
   {
    GroundXYZ[i][j][0]=(-side*.5)+(i*(side/GRID_RESOLVE));
    GroundXYZ[i][j][1]=(-side*.5)+(j*(side/GRID_RESOLVE));
-   GroundXYZ[i][j][2]=0;
+   GroundXYZ[i][j][2] = (sin(GroundXYZ[i][j][0])+cos(GroundXYZ[i][j][1])+2*exp(-((GroundXYZ[i][j][0])*(GroundXYZ[i][j][0])+GroundXYZ[i][j][1]*GroundXYZ[i][j][1])))/1.4;
   }
 
  // Compute normals at each vertex
@@ -889,7 +907,12 @@ int main(int argc, char** argv)
       //        randomly in X,Y, but at the correct height for
       //        the corresponding location in the surface grid.
       //////////////////////////////////////////////////////////////
+      int x = rand() % GRID_RESOLVE;
+      int y = rand() % GRID_RESOLVE;
 
+      ForestXYZ[i][0] = GroundXYZ[x][y][0];
+      ForestXYZ[i][1] = GroundXYZ[x][y][1];
+      ForestXYZ[i][2] = GroundXYZ[x][y][2];
     }
 
     // Intialize global transformation variables and GLUI
