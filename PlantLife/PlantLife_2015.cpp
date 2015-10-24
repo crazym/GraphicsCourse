@@ -205,7 +205,7 @@ void RenderSurfaceGrid(void)
  // Render the surface grid defined by the vertices in GroundXYZ
 
  /////////////////////////////////////////////////////////////////////////
- // TODO: Write code to draw the surface map you generated.
+ // TO DO: Write code to draw the surface map you generated.
  //       Remember that you have vertices on a square grid. You can
  //       easily determine (or you can look at the notes!) how to
  //       create GL_QUADS, or GL_TRIANGLES from the vertices in the
@@ -222,7 +222,7 @@ void MakeSurfaceGrid(void)
  // Generate an interesting surface to place the plants on
 
  /////////////////////////////////////////////////////////////////////////
- // TODO: Write code to generate a surface map. I am already giving you
+ // TO DO: Write code to generate a surface map. I am already giving you
  //       a skeleton that fills an array of vertices corresponding to
  //       locations on a square grid. The square grid is defined on the
  //       XY plane, and your job is to determine the value of Z at each
@@ -317,6 +317,51 @@ void RenderPlant(struct PlantNode *p)
  ////////////////////////////////////////////////////////////
 
  if (p==NULL) return;		// Avoid crash if called with empty node
+
+ if (p->type == 'a' || p->type == 'b') {
+    glColor3f(0.7, 0.9, 0.4);
+    StemSection();
+    glTranslatef(0, 0, 1);
+
+    if (p->left) {
+      glScalef(p->left->scl, p->left->scl, p->left->scl);
+      // rotate the left stem w.r.t parent according to its' x and z angle
+      glRotatef(p->left->x_ang, 1, 0, 0);
+      glRotatef(p->left->z_ang, 0, 0, 1);
+
+      glPushMatrix();
+      RenderPlant(p->left);
+      glPopMatrix();
+
+    }
+    // TO DO 
+    // else { // draw flowers or leaves at the end of these last-level stems,
+
+    // }
+
+    if (p->right) {
+      glScalef(p->right->scl, p->right->scl, p->right->scl);
+      // rotate the left stem w.r.t parent according to its' x and z angle
+      glRotatef(p->right->x_ang, 1, 0, 0);
+      glRotatef(p->right->z_ang, 0, 0, 1);
+
+      glPushMatrix();
+      RenderPlant(p->right);
+      glPopMatrix();
+
+    }
+    // TO DO 
+    // else { // draw flowers or leaves at the end of these last-level stems,
+
+    // }
+ }
+ else if (p->type == 'c') {
+  // glScalef()
+  LeafSection();
+ }
+ else {
+  FlowerSection();
+ }
 }
 
 void StemSection(void)
@@ -593,6 +638,45 @@ void GenerateRecursivePlant(struct PlantNode *p, int level)
    //        for 'b' type nodes, and you can look at that code
    //        to give you an idea how the process works.
    /////////////////////////////////////////////////////////////
+    // Generate nodes for left and right
+    q=(struct PlantNode *)calloc(1,sizeof(struct PlantNode));
+    q->x_ang=drand48()*X_angle;
+    q->z_ang=drand48()*Z_angle;
+    q->scl=scale_mult;
+    q->left=NULL;
+    q->right=NULL; 
+
+    r=(struct PlantNode *)calloc(1,sizeof(struct PlantNode));
+    r->x_ang=drand48()*X_angle;
+    r->z_ang=drand48()*Z_angle;
+    r->scl=scale_mult;
+    r->left=NULL;
+    r->right=NULL;
+
+    if (dice<=Paab)
+      {
+        // Selected rule a->ab
+        q->type='a';
+        r->type='b';
+      }
+    else if (dice<=(Paab + Paac))
+      {
+        // Selected rule a -> ac
+        q->type='a';
+        r->type='c';
+      }
+    else if (dice<=(Paab + Paac + Paad))
+      {
+        // Selected rule a -> ad
+        q->type='a';
+        r->type='d';
+      } 
+    else
+      {
+        // Selected rule a -> cd
+        q->type='c';
+        r->type='d';
+      }
   }
   else if (p->type=='b')
   {
@@ -657,6 +741,7 @@ int main(int argc, char** argv)
         X_angle=atof(argv[3]);
         Z_angle=atof(argv[4]);
         scale_mult=atof(argv[5]);
+        //Probabilities for L-system replacement
         Paab=atof(argv[6]);
         Paac=atof(argv[7]);
         Paad=atof(argv[8]);
@@ -678,10 +763,10 @@ int main(int argc, char** argv)
         if (Z_angle>360) Z_angle=360;
         if (scale_mult<.75) scale_mult=.75;
         if (scale_mult>.99) scale_mult=.99;
-	Paab=Paab/(Paab+Paac+Paad+Pacd);
-	Paac=Paac/(Paab+Paac+Paad+Pacd);
-	Paad=Paad/(Paab+Paac+Paad+Pacd);
-	Pacd=Pacd/(Paab+Paac+Paad+Pacd);
+      	Paab=Paab/(Paab+Paac+Paad+Pacd);
+      	Paac=Paac/(Paab+Paac+Paad+Pacd);
+      	Paad=Paad/(Paab+Paac+Paad+Pacd);
+      	Pacd=Pacd/(Paab+Paac+Paad+Pacd);
         Pba=Pba/(Pba+Pbc+Pbd);
         Pbc=Pbc/(Pba+Pbc+Pbd);
         Pbd=Pbd/(Pba+Pbc+Pbd);
@@ -735,14 +820,16 @@ int main(int argc, char** argv)
     MakeSurfaceGrid();
 
     // Make a plant forest!
-    for (int i=0;i<n_plants;i++)
-     PlantForest[i]=MakePlant();
+    for (int i=0;i<n_plants;i++) {
+      PlantForest[i]=MakePlant();
 
-    //////////////////////////////////////////////////////////////
-    // TO DO: Set the locations of the plants in the plant forest
-    //        randomly in X,Y, but at the correct height for
-    //        the corresponding location in the surface grid.
-    //////////////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////////////
+      // TO DO: Set the locations of the plants in the plant forest
+      //        randomly in X,Y, but at the correct height for
+      //        the corresponding location in the surface grid.
+      //////////////////////////////////////////////////////////////
+
+    }
 
     // Intialize global transformation variables and GLUI
     global_Z=0;
