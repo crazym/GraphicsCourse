@@ -237,17 +237,14 @@ void RenderSurfaceGrid(void)
 
         glNormal3f(GroundNormals[i+1][j][0], GroundNormals[i+1][j][1], GroundNormals[i+1][j][2]);
         glColor3f(.6*(GroundXYZ[i+1][j][2]+1), .5*(GroundXYZ[i+1][j][2]+1), .3*(GroundXYZ[i+1][j][2]+1));
-        // glColor3f(.6*GroundXYZ[i+1][j][2], .5*GroundXYZ[i+1][j][2], .3*GroundXYZ[i+1][j][2]);
         glVertex3f(GroundXYZ[i+1][j][0], GroundXYZ[i+1][j][1], GroundXYZ[i+1][j][2]);
         
         glNormal3f(GroundNormals[i][j+1][0], GroundNormals[i][j+1][1], GroundNormals[i][j+1][2]);
         glColor3f(.6*(GroundXYZ[i][j+1][2]+1), .5*(GroundXYZ[i][j+1][2]+1), .3*(GroundXYZ[i][j+1][2]+1));
-        // glColor3f(.6*GroundXYZ[i][j+1][2], .5*GroundXYZ[i][j+1][2], .3*GroundXYZ[i][j+1][2]);
         glVertex3f(GroundXYZ[i][j+1][0], GroundXYZ[i][j+1][1], GroundXYZ[i][j+1][2]);
         
         glNormal3f(GroundNormals[i+1][j+1][0], GroundNormals[i+1][j+1][1], GroundNormals[i+1][j+1][2]);
         glColor3f(.6*(GroundXYZ[i+1][j+1][2]+1), .5*(GroundXYZ[i+1][j+1][2]+1), .3*(GroundXYZ[i+1][j+1][2]+1));
-        // glColor3f(.6*GroundXYZ[i+1][j+1][2], .5*GroundXYZ[i+1][j+1][2], .3*GroundXYZ[i+1][j+1][2]);
         glVertex3f(GroundXYZ[i+1][j+1][0], GroundXYZ[i+1][j+1][1], GroundXYZ[i+1][j+1][2]);
       glEnd();
     }
@@ -298,11 +295,8 @@ void MakeSurfaceGrid(void)
   {
    GroundXYZ[i][j][0]=(-side*.5)+(i*(side/GRID_RESOLVE));
    GroundXYZ[i][j][1]=(-side*.5)+(j*(side/GRID_RESOLVE));
-   // initialize to zero height
+   // initialize for potential subtractions in height
    GroundXYZ[i][j][2]=0.7;
-   // GroundXYZ[i][j][2] = sin(GroundXYZ[i][j][0])+cos(GroundXYZ[i][j][1])+ 
-   //  2*exp(-(GroundXYZ[i][j][0]*GroundXYZ[i][j][0]+
-   //    GroundXYZ[i][j][1]*GroundXYZ[i][j][1]));
   }
 
   // Algorithm: The Fault Algorithm
@@ -554,7 +548,6 @@ void LeafSection(void)
  ///////////////////////////////////////////////////////////
   // set normal to the current Z-axis
   glNormal3f(0, 0, 1);
-  glColor3f(0.1,0.9,0.1); 
   glScalef(0.3, 0.3, 0.3);
   glBegin(GL_POLYGON);
   glVertex3f(0.0,0.0, 0);
@@ -581,7 +574,6 @@ void LeafSection(void)
 void FlowerSection()
 {
  // Draws a flower perpendicular to the current local Z axis
- glColor3f(.25,1,.1);
  StemSection();
  glTranslatef(0, 0, 1);
 
