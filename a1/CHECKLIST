@@ -21,7 +21,7 @@ A. PLEASE ANSWER THE FOLLOWING QUESTIONS (your assignment will not be
 2. I collaborated on this assignment with another student or borrowed 
    code from another source 
 
-   ___Yes   ___No
+   ___Yes   _No__No
 
    If Yes, you must clearly note in your program which parts are 
    common/borrowed and which are yours, failure to do so will be 
@@ -72,7 +72,7 @@ Description/value		        Completed	    Partial	    Not done	  Mark
 
 * Correctly implemented
   Boid position update        X
-  (5 marks)
+  (5 marks)                                * boids flies out of box
 
 * Completed boid drawing
   function with something
@@ -85,7 +85,7 @@ Description/value		        Completed	    Partial	    Not done	  Mark
   marks for the REPORT
 
 * (TA assigned): Up to 5
-  marks for 'artistic merit'
+  marks for 'artistic merit'                      4
 
 * (TA assigned): -5 to +5
   marks for coding style
@@ -102,14 +102,15 @@ C. ADD A SINGLE BULLET (*) FOR EACH CRUNCHY FEATURE ADDED, so your TA
 
 Feature						Extra credit
 
-*
-*
+* Add a moon near the upper corner, and stars tend not to get close to the moon 
+(as their light is too weak compared to the moon and people won't be able to see them if they get close! :P )
+* Add trails for each boids to show the last few positions as a trajectory
 *
 
 (add more * if needed)
 
-Extra credit (C):				
+Extra credit (C):			2	
 
 _____________________________________________________________________________
 
-Grade for the programming part (T + C): ______ (out of 50) 
+Grade for the programming part (T + C): ___46___ (out of 50) 
