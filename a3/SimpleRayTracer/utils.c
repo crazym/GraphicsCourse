@@ -333,8 +333,6 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
   C = dot(sub_a_c, sub_a_c) - 1.0;
   D = B*B - A*C;
 
-  fprintf(stderr, "D is %f\n", D);
-
   if (D < 0) {
     // no intersections
     *lambda = -1;
@@ -358,7 +356,6 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
       *lambda = -1;
     }    
   } 
-  // fprintf(stderr, "intersecting sphere at lambda = %f\n", *lambda);
   rayPosition(&ray_transformed, *lambda, p);
   // normal for canonical sphere at p is the vector from sphere center (origin)
   // which equals to p

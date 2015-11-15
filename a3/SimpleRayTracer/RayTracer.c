@@ -189,19 +189,16 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
     subVectors(p, &light_dir);
     // build a ray  r = p + lambda*(ls_p0 - p)
     light_ray = newRay(p, &light_dir);
-    findFirstHit(light_ray, &temp_lambda, obj, &temp_obj, &temp_p, &temp_n, &coor_a, &coor_b);
-    if (temp_lambda > 0 && temp_lambda < 1) {
-      /* I_l = ambientTerm */
-      tmp_col.R += obj->alb.ra * current_ls->col.R;
-      tmp_col.G += obj->alb.ra * current_ls->col.G;
-      tmp_col.B += obj->alb.ra * current_ls->col.B;
-    } else{
-      /* I_l = phongModel(p, n, de, OBJ.localparams) */
 
-      /*-- Ambient term --*/
-      tmp_col.R += obj->alb.ra * current_ls->col.R;
-      tmp_col.G += obj->alb.ra * current_ls->col.G;
-      tmp_col.B += obj->alb.ra * current_ls->col.B;
+    findFirstHit(light_ray, &temp_lambda, obj, &temp_obj, &temp_p, &temp_n, &coor_a, &coor_b);
+  
+    /* I_l = ambientTerm */
+    tmp_col.R += current_ls->col.R;
+    tmp_col.G +=  current_ls->col.G;
+    tmp_col.B +=  current_ls->col.B;
+
+    if (temp_lambda < 0 ||  temp_lambda > 1) {
+      /* I_l = phongModel(p, n, de, OBJ.localparams) */
 
       // // /*-- diffuse term --*/
 
@@ -292,7 +289,7 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
     if (current_obj != Os) {
       // fprintf(stderr, "before intersecting\n");
       current_obj->intersect(current_obj, ray, &temp_lambda, &temp_p, &temp_n, &coor_a, &coor_b);
-      // fprintf(stderr, "after interscting: %f\n", temp_lambda);
+      // fprintf(stderr, "after intersecting: %f\n", temp_lambda);
       if ((*lambda < 0 || temp_lambda < *lambda) && (temp_lambda > 0)) {
         *lambda = temp_lambda;
         *p = temp_p;
