@@ -282,19 +282,22 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
  // reference of what to do in here
  /////////////////////////////////////////////////////////////
 
-  double temp_lambda;
+  double temp_lambda= 0;
   struct point3D temp_p, temp_n;
   double coor_a, coor_b = 0;
   object3D *current_obj = object_list;
 
   *lambda = -1;
-  while (current_obj) {
+  while (current_obj != NULL) {
     if (current_obj != Os) {
+      // fprintf(stderr, "before intersecting\n");
       current_obj->intersect(current_obj, ray, &temp_lambda, &temp_p, &temp_n, &coor_a, &coor_b);
+      // fprintf(stderr, "after interscting: %f\n", temp_lambda);
       if ((*lambda < 0 || temp_lambda < *lambda) && (temp_lambda > 0)) {
         *lambda = temp_lambda;
         *p = temp_p;
         *n = temp_n;
+        *obj = current_obj;
       }
     }
     current_obj = current_obj->next;
@@ -330,11 +333,13 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
   return;
  }
 
+ // fprintf(stderr, "before hitting\n");
  ///////////////////////////////////////////////////////
  // TO DO: Complete this function. Refer to the notes
  // if you are unsure what to do here.
  ///////////////////////////////////////////////////////
   findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
+  // fprintf(stderr, "after hitting\n");
   if (lambda > 0) {
     rtShade(obj, &p, &n, ray, depth, a, b, &I);
     col->R = I.R;
@@ -496,6 +501,7 @@ int main(int argc, char *argv[])
     fprintf(stderr,"%d/%d, ",j,sx);
     for (i=0;i<sx;i++)
     {
+
       ///////////////////////////////////////////////////////////////////
       // TO DO - complete the code that should be in this loop to do the
       //         raytracing!
@@ -504,7 +510,6 @@ int main(int argc, char *argv[])
       col.R = background.R;
       col.G = background.G;
       col.B = background.B;
-
       pc.px = cam->wl + i * du;
       pc.py = cam->wt + j * dv;
       pc.pz = cam->f;
