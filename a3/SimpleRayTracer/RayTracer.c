@@ -176,10 +176,10 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
 
  pointLS *current_ls = light_list;
  struct ray3D *light_ray;
- struct point3D *light_dir;
+ struct point3D light_dir;
 
  double temp_lambda;
- struct object3D temp_obj;
+ struct object3D *temp_obj;
  double coor_a, coor_b;
  struct point3D temp_p, temp_n;
 
@@ -188,14 +188,75 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
     // light_dir = p0 - p
     subVectors(p, &light_dir);
     // build a ray  r = p + lambda*(ls_p0 - p)
-    light_ray = newRay(p, &light_direction);
-    findFirstHit(&light_ray, &temp_lambda, obj, &temp_obj, &temp_p, &temp_n, &coor_a, &coor_b); 
+    light_ray = newRay(p, &light_dir);
+    findFirstHit(light_ray, &temp_lambda, obj, &temp_obj, &temp_p, &temp_n, &coor_a, &coor_b);
+    if (temp_lambda > 0 && temp_lambda < 1) {
+      /* I_l = ambientTerm */
+      tmp_col.R += obj->alb.ra * current_ls->col.R;
+      tmp_col.G += obj->alb.ra * current_ls->col.G;
+      tmp_col.B += obj->alb.ra * current_ls->col.B;
+    } else{
+      /* I_l = phongModel(p, n, de, OBJ.localparams) */
 
+      /*-- Ambient term --*/
+      tmp_col.R += obj->alb.ra * current_ls->col.R;
+      tmp_col.G += obj->alb.ra * current_ls->col.G;
+      tmp_col.B += obj->alb.ra * current_ls->col.B;
+
+      // // /*-- diffuse term --*/
+
+      // // Compute s . n
+      // normalize(&light_dir);
+      // temp_dot_value = dot(&light_dir, n);
+
+      // // check attribute so plane can show
+      // if (obj->frontAndBack){
+      //   temp_dot_value = -temp_dot_value;
+      // }
+
+      // // Add to tmp_col
+      // factor = MAX(temp_dot_value, 0);
+      // tmp_col.R += obj->alb.rd * current_ls->col.R * factor;
+      // tmp_col.G += obj->alb.rd * current_ls->col.G * factor;
+      // tmp_col.B += obj->alb.rd * current_ls->col.B * factor;
+
+      // /*-- specular term --*/
+
+      // // Calculate mirror direction m = 2(s · n))n − s
+      // temp_dot_value = dot(&light_dir, n);
+      // mirror_dir.px = 2 * temp_dot_value * n->px;
+      // mirror_dir.py = 2 * temp_dot_value * n->py;
+      // mirror_dir.pz = 2 * temp_dot_value * n->pz;
+      // mirror_dir.pw = 1;
+      // subVectors(&light_dir, &mirror_dir);
+      // normalize(&mirror_dir);
+      
+      // // the emittance direction is the opposite direction of the ray
+      // emittant_dir.px = -ray->d.px;
+      // emittant_dir.py = -ray->d.py;
+      // emittant_dir.pz = -ray->d.pz;
+      // emittant_dir.pw = 1;
+      // normalize(&emittant_dir);
+      
+      // // compute max(0, c . m)
+      // temp_dot_value = dot(&emittant_dir, &mirror_dir);
+      // factor = pow(MAX(0,temp_dot_value),obj->shinyness);
+      // tmp_col.R += obj->alb.rs * cur_light->col.R * factor;
+      // tmp_col.G += obj->alb.rs * cur_light->col.G * factor;
+      // tmp_col.B += obj->alb.rs * cur_light->col.B * factor;
+    }
+    current_ls = current_ls->next;
  }
 
 
 
  // Be sure to update 'col' with the final colour computed here!
+  col->R = tmp_col.R * R;
+  col->G = tmp_col.G * G;
+  col->B = tmp_col.B * B;
+
+  free(light_ray);
+
  return;
 
 }
