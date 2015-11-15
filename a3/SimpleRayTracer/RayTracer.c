@@ -203,9 +203,9 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
     }
     
     /* I_l = ambientTerm */
-    tmp_col.R += obj->alb.ra * current_ls->col.R;
-    tmp_col.G += obj->alb.ra * current_ls->col.G;
-    tmp_col.B += obj->alb.ra * current_ls->col.B;
+    // tmp_col.R += obj->alb.ra * current_ls->col.R;
+    // tmp_col.G += obj->alb.ra * current_ls->col.G;
+    // tmp_col.B += obj->alb.ra * current_ls->col.B;
 
     // fprintf(stderr, "temp lambda %f\n", temp_lambda);
     if (temp_lambda < 0 ||  temp_lambda > 1) {
@@ -217,41 +217,41 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
       normalize(&light_dir);
       double dot_n_s = dot(n, &light_dir);
 
-      // check attribute so plane can show
-      if (obj->frontAndBack){
+      // check special case for plane normals
+      if (obj->frontAndBack && dot_n_s < 0){
         dot_n_s = -dot_n_s;
       }
 
       // Add to tmp_col
       double factor = max(dot_n_s, 0); 
-      tmp_col.R += obj->alb.rd * current_ls->col.R * factor;
-      tmp_col.G += obj->alb.rd * current_ls->col.G * factor;
-      tmp_col.B += obj->alb.rd * current_ls->col.B * factor;
+      // tmp_col.R += obj->alb.rd * current_ls->col.R * factor;
+      // tmp_col.G += obj->alb.rd * current_ls->col.G * factor;
+      // tmp_col.B += obj->alb.rd * current_ls->col.B * factor;
 
-      // /*-- specular term --*/
+      /*-- specular term --*/
 
-      // // Calculate mirror direction m = 2(s · n))n − s
-      // temp_dot_value = dot(&light_dir, n);
-      // mirror_dir.px = 2 * temp_dot_value * n->px;
-      // mirror_dir.py = 2 * temp_dot_value * n->py;
-      // mirror_dir.pz = 2 * temp_dot_value * n->pz;
-      // mirror_dir.pw = 1;
-      // subVectors(&light_dir, &mirror_dir);
-      // normalize(&mirror_dir);
+      // Calculate mirror direction m = 2(s · n))n − s
+      double temp_dot_value = dot(&light_dir, n);
+      mirror_dir.px = 2 * temp_dot_value * n->px;
+      mirror_dir.py = 2 * temp_dot_value * n->py;
+      mirror_dir.pz = 2 * temp_dot_value * n->pz;
+      mirror_dir.pw = 1;
+      subVectors(&light_dir, &mirror_dir);
+      normalize(&mirror_dir);
       
-      // // the emittance direction is the opposite direction of the ray
-      // emittant_dir.px = -ray->d.px;
-      // emittant_dir.py = -ray->d.py;
-      // emittant_dir.pz = -ray->d.pz;
-      // emittant_dir.pw = 1;
-      // normalize(&emittant_dir);
+      // the emittance direction is the opposite direction of the ray
+      emittant_dir.px = -ray->d.px;
+      emittant_dir.py = -ray->d.py;
+      emittant_dir.pz = -ray->d.pz;
+      emittant_dir.pw = 1;
+      normalize(&emittant_dir);
       
-      // // compute max(0, c . m)
-      // temp_dot_value = dot(&emittant_dir, &mirror_dir);
-      // factor = pow(MAX(0,temp_dot_value),obj->shinyness);
-      // tmp_col.R += obj->alb.rs * cur_light->col.R * factor;
-      // tmp_col.G += obj->alb.rs * cur_light->col.G * factor;
-      // tmp_col.B += obj->alb.rs * cur_light->col.B * factor;
+      // compute max(0, c . m)
+      temp_dot_value = dot(&emittant_dir, &mirror_dir);
+      factor = pow(max(0,temp_dot_value),obj->shinyness);
+      tmp_col.R += obj->alb.rs * current_ls->col.R * factor;
+      tmp_col.G += obj->alb.rs * current_ls->col.G * factor;
+      tmp_col.B += obj->alb.rs * current_ls->col.B * factor;
     }
 
     /* Global Component */
