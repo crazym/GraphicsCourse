@@ -140,7 +140,7 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
  // - The normal at the point
  // - The ray (needed to determine the reflection direction to use for the global component, as well as for
  //   the Phong specular component)
- // - The current racursion depth
+ // - The current recursion depth
  // - The (a,b) texture coordinates (meaningless unless texture is enabled)
  //
  // Returns:
@@ -174,6 +174,27 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
  // details about the shading model.
  //////////////////////////////////////////////////////////////
 
+ pointLS *current_ls = light_list;
+ struct ray3D *light_ray;
+ struct point3D *light_dir;
+
+ double temp_lambda;
+ struct object3D temp_obj;
+ double coor_a, coor_b;
+ struct point3D temp_p, temp_n;
+
+ while (current_ls) {
+    memcpy(&light_dir, &current_ls->p0, sizeof(struct point3D));
+    // light_dir = p0 - p
+    subVectors(p, &light_dir);
+    // build a ray  r = p + lambda*(ls_p0 - p)
+    light_ray = newRay(p, &light_direction);
+    findFirstHit(&light_ray, &temp_lambda, obj, &temp_obj, &temp_p, &temp_n, &coor_a, &coor_b); 
+
+ }
+
+
+
  // Be sure to update 'col' with the final colour computed here!
  return;
 
@@ -199,6 +220,24 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
  // TO DO: Implement this function. See the notes for
  // reference of what to do in here
  /////////////////////////////////////////////////////////////
+
+  double temp_lambda;
+  struct point3D temp_p, temp_n;
+  double coor_a, coor_b = 0;
+  object3D *current_obj = object_list;
+
+  *lambda = -1;
+  while (current_obj) {
+    if (current_obj != Os) {
+      current_obj->intersect(current_obj, ray, &temp_lambda, &temp_p, &temp_n, &coor_a, &coor_b);
+      if ((*lambda < 0 || temp_lambda < *lambda) && (temp_lambda > 0)) {
+        *lambda = temp_lambda;
+        *p = temp_p;
+        *n = temp_n;
+      }
+    }
+    current_obj = current_obj->next;
+  }
 
 }
 
@@ -234,6 +273,18 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
  // TO DO: Complete this function. Refer to the notes
  // if you are unsure what to do here.
  ///////////////////////////////////////////////////////
+  findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
+  if (lambda > 0) {
+    rtShade(obj, &p, &n, ray, depth, a, b, &I);
+    col->R = I.R;
+    col->G = I.G;
+    col->B = I.B;
+  } else {
+    col->R = 0;
+    col->G = 0;
+    col->B = 0;
+  }
+
 }
 
 int main(int argc, char *argv[])
