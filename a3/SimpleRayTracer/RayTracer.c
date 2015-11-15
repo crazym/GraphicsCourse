@@ -389,6 +389,10 @@ int main(int argc, char *argv[])
       //         raytracing!
       ///////////////////////////////////////////////////////////////////
       // Calcuate camera coordinates of pixel i,j at point pc
+      col.R = background.R;
+      col.G = background.G;
+      col.B = background.B;
+
       pc.px = cam->wl + i * du;
       pc.py = cam->wt + j * dv;
       pc.pz = cam->f;
@@ -405,18 +409,12 @@ int main(int argc, char *argv[])
       // create a ray and trace
       ray = newRay(&pc, &d); 
       rayTrace(ray, 0, &col, NULL); 
-    
-      // set to background color if nothing is hit
-      if (col.R == -1 && col.G == -1 && col.B == -1){
-        col.R = background.R;
-        col.G = background.G;
-        col.B = background.B;
-      }
-    
+      
       // set color of this pixel i,j
-      *(rgbIm + (i + (j * sx)) * 3) = col.R * 255;
-      *(rgbIm + (i + (j * sx)) * 3 + 1) = col.G * 255;
-      *(rgbIm + (i + (j * sx)) * 3 + 2) = col.B * 255;
+      int offset = (i + (j * sx)) * 3;
+      *(rgbIm + (offset + 0)) = col.R * 255;
+      *(rgbIm + (offset + 1)) = col.G * 255;
+      *(rgbIm + (offset + 2)) = col.B * 255;
 
       /* Free memory */
       free(ray);
