@@ -147,43 +147,50 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
  // - The colour for this ray (using the col pointer)
  //
 
- struct colourRGB tmp_col;	// Accumulator for colour components
- double R,G,B;			// Colour for the object in R G and B
+  struct colourRGB tmp_col;	// Accumulator for colour components
+  double R,G,B;			// Colour for the object in R G and B
 
- // This will hold the colour as we process all the components of
- // the Phong illumination model
- tmp_col.R=0;
- tmp_col.G=0;
- tmp_col.B=0;
+  // This will hold the colour as we process all the components of
+  // the Phong illumination model
+  tmp_col.R=0;
+  tmp_col.G=0;
+  tmp_col.B=0;
 
- if (obj->texImg==NULL)		// Not textured, use object colour
- {
+  if (obj->texImg==NULL)		// Not textured, use object colour
+  {
   R=obj->col.R;
   G=obj->col.G;
   B=obj->col.B;
- }
- else
- {
+  }
+  else
+  {
   // Get object colour from the texture given the texture coordinates (a,b), and the texturing function
   // for the object. Note that we will use textures also for Photon Mapping.
   obj->textureMap(obj->texImg,a,b,&R,&G,&B);
- }
+  }
 
  //////////////////////////////////////////////////////////////
  // TO DO: Implement this function. Refer to the notes for
  // details about the shading model.
  //////////////////////////////////////////////////////////////
 
- pointLS *current_ls = light_list;
- struct ray3D *light_ray;
- struct point3D light_dir;
+  pointLS *current_ls = light_list;
+  struct ray3D *light_ray;
+  struct point3D light_dir;
+  struct ray3D *refl_ray;              // Light ray of reflection
 
- double temp_lambda;
- struct object3D *temp_obj;
- double coor_a, coor_b;
- struct point3D temp_p, temp_n;
+  double temp_lambda;
+  struct object3D *temp_obj;
+  double coor_a, coor_b;
+  struct point3D temp_p, temp_n;
 
- while (current_ls) {
+  point3D mirror_dir;                 // the mirror direction
+  point3D emittant_dir;               // the emittance direction
+  point3D reflect_dir;                // direction of reflection
+
+  struct colourRGB reflect_color;     // color of reflection
+
+  while (current_ls) {
     memcpy(&light_dir, &current_ls->p0, sizeof(struct point3D));
     // light_dir = p0 - p
     subVectors(p, &light_dir);
@@ -191,31 +198,35 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
     light_ray = newRay(p, &light_dir);
 
     findFirstHit(light_ray, &temp_lambda, obj, &temp_obj, &temp_p, &temp_n, &coor_a, &coor_b);
-  
+    if (temp_lambda > 0 && temp_lambda < 1) {
+      fprintf(stderr, "find first hit lambda in rtShade: %f\n", temp_lambda);
+    }
+    
     /* I_l = ambientTerm */
-    tmp_col.R += current_ls->col.R;
-    tmp_col.G +=  current_ls->col.G;
-    tmp_col.B +=  current_ls->col.B;
+    tmp_col.R += obj->alb.ra * current_ls->col.R;
+    tmp_col.G += obj->alb.ra * current_ls->col.G;
+    tmp_col.B += obj->alb.ra * current_ls->col.B;
 
+    // fprintf(stderr, "temp lambda %f\n", temp_lambda);
     if (temp_lambda < 0 ||  temp_lambda > 1) {
-      /* I_l = phongModel(p, n, de, OBJ.localparams) */
+      // if not shadowed, add diffuse and specular
 
-      // // /*-- diffuse term --*/
+      // /*-- diffuse term --*/
 
-      // // Compute s . n
-      // normalize(&light_dir);
-      // temp_dot_value = dot(&light_dir, n);
+      // Compute dot(n',s), where s is the light direction
+      normalize(&light_dir);
+      double dot_n_s = dot(n, &light_dir);
 
-      // // check attribute so plane can show
-      // if (obj->frontAndBack){
-      //   temp_dot_value = -temp_dot_value;
-      // }
+      // check attribute so plane can show
+      if (obj->frontAndBack){
+        dot_n_s = -dot_n_s;
+      }
 
-      // // Add to tmp_col
-      // factor = MAX(temp_dot_value, 0);
-      // tmp_col.R += obj->alb.rd * current_ls->col.R * factor;
-      // tmp_col.G += obj->alb.rd * current_ls->col.G * factor;
-      // tmp_col.B += obj->alb.rd * current_ls->col.B * factor;
+      // Add to tmp_col
+      double factor = max(dot_n_s, 0); 
+      tmp_col.R += obj->alb.rd * current_ls->col.R * factor;
+      tmp_col.G += obj->alb.rd * current_ls->col.G * factor;
+      tmp_col.B += obj->alb.rd * current_ls->col.B * factor;
 
       // /*-- specular term --*/
 
@@ -242,6 +253,34 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
       // tmp_col.G += obj->alb.rs * cur_light->col.G * factor;
       // tmp_col.B += obj->alb.rs * cur_light->col.B * factor;
     }
+
+    /* Global Component */
+
+    // if (depth < MAX_DEPTH){
+    //   double temp_dot_value = dot(&ray->d, n);
+    //   reflect_dir.px = 2 * temp_dot_value * n->px;
+    //   reflect_dir.py = 2 * temp_dot_value * n->py;
+    //   reflect_dir.pz = 2 * temp_dot_value * n->pz;
+    //   reflect_dir.pw = 1;
+    //   // construct new mirror direction
+    //   memcpy(&mirror_dir, &ray->d, sizeof(struct point3D));
+    //   subVectors(&reflect_dir, &mirror_dir);
+    //   normalize(&mirror_dir);
+
+    //   // If OBJ has specular reflection
+    //   if (obj->alb.rs != 0){
+    //     // New ray from p to mirrow direction
+    //     refl_ray = newRay(p, &mirror_dir);
+    //     rayTrace(refl_ray, depth+1, &reflect_color, obj);
+
+    //     // add the global color to tmp_col
+    //     if (reflect_color.R >= 0){
+    //       tmp_col.R += obj->alb.rg * reflect_color.R;
+    //       tmp_col.G += obj->alb.rg * reflect_color.G;
+    //       tmp_col.B += obj->alb.rg * reflect_color.B;
+    //     }
+    //   }
+    // }
     current_ls = current_ls->next;
  }
 
