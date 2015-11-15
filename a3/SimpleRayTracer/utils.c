@@ -71,6 +71,28 @@ inline void rayTransform(struct ray3D *ray_orig, struct ray3D *ray_transformed, 
  ///////////////////////////////////////////
  // TO DO: Complete this function
  ///////////////////////////////////////////
+
+  // y = A*x + t
+  // ==> [y; 1] = T*[x;1], where T = [A t; 0 0 0 1]
+  // r'(lambda) = a' + lambda*d'
+  // where a' = inv(A)*(a - t), d' = inv(A)*d'
+  memcpy(ray_transformed, ray_orig, sizeof(ray3D));
+  
+  // ray_transformed->p0.px = ray_orig->p0.px;
+  // ray_transformed->p0.py = ray_orig->p0.py;
+  // ray_transformed->p0.pz = ray_orig->p0.pz;
+  // ray_transformed->p0.pw = 1;
+
+  matVecMult(obj->Tinv, &ray_transformed->p0);
+  
+  // ray_transformed->d.px = ray_orig->d.dx;
+  // ray_transformed->d.py = ray_orig->d.dy;
+  // ray_transformed->d.pz = ray_orig->d.dz;
+  ray_transformed->d.pw = 0;
+
+  matVecMult(obj->Tinv, &ray_transformed->d);
+  ray_transformed->d.pw = 1;
+
 }
 
 inline void normalTransform(struct point3D *n_orig, struct point3D *n_transformed, struct object3D *obj)
@@ -82,6 +104,20 @@ inline void normalTransform(struct point3D *n_orig, struct point3D *n_transforme
  ///////////////////////////////////////////
  // TO DO: Complete this function
  ///////////////////////////////////////////
+  memcpy(n_transformed, n_orig, sizeof(point3D));
+  double t[4][4];
+  n_transformed->pw = 0;
+
+  for (int i = 0; i < 4; i ++){
+    for (int j = 0; j < 4; j ++){
+      t[i][j] = obj->Tinv[j][i]; 
+    }
+  }  
+  matVecMult(t, n_transformed);
+
+  n_transformed->pw = 1;
+  normalize(n_transformed);
+
 }
 
 /////////////////////////////////////////////
@@ -212,6 +248,12 @@ struct object3D *newCyl(double ra, double rd, double rs, double rg, double r, do
 //      and canonical sphere with a given ray. This is the most fundamental component
 //      of the raytracer.
 ///////////////////////////////////////////////////////////////////////////////////////
+
+// intersection function compute: 
+// the lambda at the intersection
+// the intersection point p, the normal at that point n, and the texture coordinates (a,b).
+// The texture coordinates are not used unless texImg!=NULL and a textureMap function
+// has been provided
 void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, struct point3D *p, struct point3D *n, double *a, double *b)
 {
  // Computes and returns the value of 'lambda' at the intersection
@@ -220,6 +262,41 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
  /////////////////////////////////
  // TO DO: Complete this function.
  /////////////////////////////////
+struct ray3D *ray_transformed;
+// normal for canonical plan pointing upwards
+struct point3D *n_orig = newPoint(0, 0, 1);
+// holder for a known point on plane, stores p - a later 
+struct point3D *known_point = newPoint(0, 0, 0);
+
+rayTransform(ray, ray_transformed, plane);
+double dot_d_n = dot(&ray_transformed->d, n_orig);
+if (dot_d_n == 0) {
+  *lambda = -1;
+} else {
+  subVectors(&ray_transformed->p0, known_point);
+  double canon_lambda = dot(known_point, n_orig) / dot_d_n;
+
+  if (canon_lambda != 0) {
+    // compute intersection p
+    rayPosition(ray_transformed, canon_lambda, p);
+
+    // check if p is in the plane,
+    if (p->px < 1 && p->px > -1 && p->py < 1 && p->py > -1) {
+      // if so, assign the same lambda for transformed object
+      *lambda = canon_lambda;
+      // assign the rayPosition and transform normal n
+      ray->rayPos(ray, *lambda, p);
+      normalTransform(n_orig, n, plane);
+    } else {
+      *lambda = -1;
+      return;
+    }
+  }
+
+  normalize(n);
+}
+
+
 }
 
 void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda, struct point3D *p, struct point3D *n, double *a, double *b)

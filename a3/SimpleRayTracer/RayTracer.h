@@ -124,6 +124,8 @@ struct object3D{
         // has been provided
 	void (*intersect)(struct object3D *obj, struct ray3D *ray, double *lambda, struct point3D *p, struct point3D *n, double *a, double *b);		
 
+	// NOT DOING THIS FOR ASSN3
+	
 	// Texture mapping function. Takes normalized texture coordinates (a,b) and returns the
   	// texture colour at that point using bi-linear interpolation 
 	void (*textureMap)(struct image *img, double a, double b, double *R, double *G, double *B);
