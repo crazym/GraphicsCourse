@@ -18,6 +18,7 @@
 
 #define MAX_SVD_ITERATIONS 100
 #define max(A,B) ((A)<(B)?(B):(A))
+#define min(A,B) ((A)>(B)?(B):(A))
 
 #define signof(A,B)    (((B)>=0)? (fabs(A)) : (-fabs(A)))
 

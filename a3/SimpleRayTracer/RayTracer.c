@@ -158,15 +158,15 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
 
   if (obj->texImg==NULL)		// Not textured, use object colour
   {
-  R=obj->col.R;
-  G=obj->col.G;
-  B=obj->col.B;
+    R=obj->col.R;
+    G=obj->col.G;
+    B=obj->col.B;
   }
   else
   {
-  // Get object colour from the texture given the texture coordinates (a,b), and the texturing function
-  // for the object. Note that we will use textures also for Photon Mapping.
-  obj->textureMap(obj->texImg,a,b,&R,&G,&B);
+    // Get object colour from the texture given the texture coordinates (a,b), and the texturing function
+    // for the object. Note that we will use textures also for Photon Mapping.
+    obj->textureMap(obj->texImg,a,b,&R,&G,&B);
   }
 
  //////////////////////////////////////////////////////////////
@@ -177,18 +177,20 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
   pointLS *current_ls = light_list;
   struct ray3D *light_ray;
   struct point3D light_dir;
-  struct ray3D *refl_ray;              // Light ray of reflection
 
+  // used for findFirstHit
   double temp_lambda;
   struct object3D *temp_obj;
   double coor_a, coor_b;
   struct point3D temp_p, temp_n;
 
-  point3D mirror_dir;                 // the mirror direction
-  point3D emittant_dir;               // the emittance direction
-  point3D reflect_dir;                // direction of reflection
-
-  struct colourRGB reflect_color;     // color of reflection
+  // used in Phong model and Global reflector
+  struct ray3D *ref_ray;
+  double temp_dot_value, temp_max;
+  point3D m;                 
+  point3D c;               
+  point3D ms;    
+  struct colourRGB E_spec;
 
   while (current_ls) {
     memcpy(&light_dir, &current_ls->p0, sizeof(struct point3D));
@@ -197,104 +199,96 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
     // build a ray  r = p + lambda*(ls_p0 - p)
     light_ray = newRay(p, &light_dir);
 
+    /* Local Component */
+    // find first hit of ray at obj
     findFirstHit(light_ray, &temp_lambda, obj, &temp_obj, &temp_p, &temp_n, &coor_a, &coor_b);
-    if (temp_lambda > 0 && temp_lambda < 1) {
-      fprintf(stderr, "find first hit lambda in rtShade: %f\n", temp_lambda);
-    }
     
-    /* I_l = ambientTerm */
-    // tmp_col.R += obj->alb.ra * current_ls->col.R;
-    // tmp_col.G += obj->alb.ra * current_ls->col.G;
-    // tmp_col.B += obj->alb.ra * current_ls->col.B;
+    /* add ambient first: I = ra * Ia */
+    tmp_col.R += obj->alb.ra * current_ls->col.R;
+    tmp_col.G += obj->alb.ra * current_ls->col.G;
+    tmp_col.B += obj->alb.ra * current_ls->col.B;
 
-    // fprintf(stderr, "temp lambda %f\n", temp_lambda);
+    // check if there is any objects in between (0 < temp_lambda < 1)
     if (temp_lambda < 0 ||  temp_lambda > 1) {
       // if not shadowed, add diffuse and specular
 
-      // /*-- diffuse term --*/
+      /* diffuse: I += rd * Id * max(0, dot(n,s)) */
 
-      // Compute dot(n',s), where s is the light direction
+      // Compute dot(n,s)
+      // where s is the normalized light direction and n is normal at intersection
       normalize(&light_dir);
       double dot_n_s = dot(n, &light_dir);
 
-      // check special case for plane normals
+      // check special case for plane normals to make sure it points to the right direction (positive)
       if (obj->frontAndBack && dot_n_s < 0){
         dot_n_s = -dot_n_s;
       }
+      temp_max = max(dot_n_s, 0); 
+      tmp_col.R += obj->alb.rd * current_ls->col.R * temp_max;
+      tmp_col.G += obj->alb.rd * current_ls->col.G * temp_max;
+      tmp_col.B += obj->alb.rd * current_ls->col.B * temp_max;
 
-      // Add to tmp_col
-      double factor = max(dot_n_s, 0); 
-      // tmp_col.R += obj->alb.rd * current_ls->col.R * factor;
-      // tmp_col.G += obj->alb.rd * current_ls->col.G * factor;
-      // tmp_col.B += obj->alb.rd * current_ls->col.B * factor;
+      /* specular: I += rs * Is * max(0, dot(c, m)) */
 
-      /*-- specular term --*/
-
-      // Calculate mirror direction m = 2(s · n))n − s
-      double temp_dot_value = dot(&light_dir, n);
-      mirror_dir.px = 2 * temp_dot_value * n->px;
-      mirror_dir.py = 2 * temp_dot_value * n->py;
-      mirror_dir.pz = 2 * temp_dot_value * n->pz;
-      mirror_dir.pw = 1;
-      subVectors(&light_dir, &mirror_dir);
-      normalize(&mirror_dir);
+      // Compute perfect mirror direction m = 2* dot(n, s) * n − s
+      temp_dot_value = dot(&light_dir, n);
+      m.px = 2 * temp_dot_value * n->px;
+      m.py = 2 * temp_dot_value * n->py;
+      m.pz = 2 * temp_dot_value * n->pz;
+      m.pw = 1;
+      subVectors(&light_dir, &m);
+      normalize(&m);
       
-      // the emittance direction is the opposite direction of the ray
-      emittant_dir.px = -ray->d.px;
-      emittant_dir.py = -ray->d.py;
-      emittant_dir.pz = -ray->d.pz;
-      emittant_dir.pw = 1;
-      normalize(&emittant_dir);
+      // Compute emmittant direction of intersect c = p - e
+      // where p is the intersection point and e is camera location
+      // which is the direction of the camera
+      c.px = -ray->d.px;
+      c.py = -ray->d.py;
+      c.pz = -ray->d.pz;
+      c.pw = 1;
+      normalize(&c);
       
-      // compute max(0, c . m)
-      temp_dot_value = dot(&emittant_dir, &mirror_dir);
-      factor = pow(max(0,temp_dot_value),obj->shinyness);
-      tmp_col.R += obj->alb.rs * current_ls->col.R * factor;
-      tmp_col.G += obj->alb.rs * current_ls->col.G * factor;
-      tmp_col.B += obj->alb.rs * current_ls->col.B * factor;
+      temp_dot_value = dot(&c, &m);
+      temp_max = pow(max(0,temp_dot_value),obj->shinyness);
+      tmp_col.R += obj->alb.rs * current_ls->col.R * temp_max;
+      tmp_col.G += obj->alb.rs * current_ls->col.G * temp_max;
+      tmp_col.B += obj->alb.rs * current_ls->col.B * temp_max;
     }
 
     /* Global Component */
 
-    // if (depth < MAX_DEPTH){
-    //   double temp_dot_value = dot(&ray->d, n);
-    //   reflect_dir.px = 2 * temp_dot_value * n->px;
-    //   reflect_dir.py = 2 * temp_dot_value * n->py;
-    //   reflect_dir.pz = 2 * temp_dot_value * n->pz;
-    //   reflect_dir.pw = 1;
-    //   // construct new mirror direction
-    //   memcpy(&mirror_dir, &ray->d, sizeof(struct point3D));
-    //   subVectors(&reflect_dir, &mirror_dir);
-    //   normalize(&mirror_dir);
+    if (depth < MAX_DEPTH){
+      // compute mirror direction: ms = - d + 2 * dot(d, n) * n
+      double temp_dot_value = dot(&ray->d, n);
+      ms.px = 2 * temp_dot_value * n->px;
+      ms.py = 2 * temp_dot_value * n->py;
+      ms.pz = 2 * temp_dot_value * n->pz;
+      ms.pw = 1;
+      // construct new mirror direction
+      // memcpy(&m, &ray->d, sizeof(struct point3D));
+      subVectors(&ray->d, &ms);
+      normalize(&ms);
 
-    //   // If OBJ has specular reflection
-    //   if (obj->alb.rs != 0){
-    //     // New ray from p to mirrow direction
-    //     refl_ray = newRay(p, &mirror_dir);
-    //     rayTrace(refl_ray, depth+1, &reflect_color, obj);
+      // If OBJ has specular reflection
+      if (obj->alb.rs != 0){
+        // create the ray from intersection point p along mirror direction 
+        ref_ray = newRay(p, &ms);
+        rayTrace(ref_ray, depth++, &E_spec, obj);
 
-    //     // add the global color to tmp_col
-    //     if (reflect_color.R >= 0){
-    //       tmp_col.R += obj->alb.rg * reflect_color.R;
-    //       tmp_col.G += obj->alb.rg * reflect_color.G;
-    //       tmp_col.B += obj->alb.rg * reflect_color.B;
-    //     }
-    //   }
-    // }
+        tmp_col.R += obj->alb.rg * E_spec.R;
+        tmp_col.G += obj->alb.rg * E_spec.G;
+        tmp_col.B += obj->alb.rg * E_spec.B;
+      }
+    }
     current_ls = current_ls->next;
  }
 
-
-
  // Be sure to update 'col' with the final colour computed here!
-  col->R = tmp_col.R * R;
-  col->G = tmp_col.G * G;
-  col->B = tmp_col.B * B;
-
-  free(light_ray);
+  col->R = min(tmp_col.R * R, 1);
+  col->G = min(tmp_col.G * G, 1);
+  col->B = min(tmp_col.B * B, 1);
 
  return;
-
 }
 
 void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct object3D **obj, struct point3D *p, struct point3D *n, double *a, double *b)
@@ -324,11 +318,9 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
   object3D *current_obj = object_list;
 
   *lambda = -1;
-  while (current_obj != NULL) {
+  while (current_obj) {
     if (current_obj != Os) {
-      // fprintf(stderr, "before intersecting\n");
       current_obj->intersect(current_obj, ray, &temp_lambda, &temp_p, &temp_n, &coor_a, &coor_b);
-      // fprintf(stderr, "after intersecting: %f\n", temp_lambda);
       if ((*lambda < 0 || temp_lambda < *lambda) && (temp_lambda > 0)) {
         *lambda = temp_lambda;
         *p = temp_p;

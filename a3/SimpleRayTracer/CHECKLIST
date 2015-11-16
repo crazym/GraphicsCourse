@@ -45,24 +45,24 @@ B. PLACE AN (X) IN FRONT OF PORTIONS OF THE ASSIGNMENT THAT YOU COMPLETED IN FUL
 				                          Completed   Partial   Not done   Mark
 [10 marks]  Ray Casting               X
 
-[10 marks]  Intersection
+[10 marks]  Intersection              X
 	    for square
 
-[10 marks]  Intersection	
+[10 marks]  Intersection	            X
             for spheres
 
 [10 marks]  Intersection
 	    for cylinders
 	    
-[15 marks]  Normal transforms
+[15 marks]  Normal transforms         X
 
-[15 marks]  Local Phong
+[15 marks]  Local Phong               X
+ 
+[10 marks]  Shadows                   X
 
-[10 marks]  Shadows
+[15 marks]  Global reflection         X
 
-[15 marks]  Global reflection
-
-[5 marks]   Report
+[5 marks]   Report                    X 
 
 [TA assigned]  Penalty marks
 

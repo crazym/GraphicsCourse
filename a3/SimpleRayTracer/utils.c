@@ -317,7 +317,6 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
   double A, B, C, D;
   // memcpy(ray_transformed, ray, sizeof(struct ray3D));
 
-
   // ray(lambda) = p0 + lambda*d
   // norm( ray(lambda) - c) = 1
   // A*lambda^2 + 2Bx + C = 0
@@ -377,8 +376,9 @@ void cylIntersect(struct object3D *cylinder, struct ray3D *r, double *lambda, st
 }
 
 /////////////////////////////////////////////////////////////////
-// Surface coordinates & random sampling on object surfaces
+// Surface coordinates & random sampling on object surfaces 
 /////////////////////////////////////////////////////////////////
+/* hmm, Asst4?? */
 void planeCoordinates(struct object3D *plane, double a, double b, double *x, double *y, double *z)
 {
  // Return in (x,y,z) the coordinates of a point on the plane given by the 2 parameters a,b in [0,1].
