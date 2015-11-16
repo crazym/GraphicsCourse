@@ -73,23 +73,17 @@ inline void rayTransform(struct ray3D *ray_orig, struct ray3D *ray_transformed, 
  ///////////////////////////////////////////
 
   // y = A*x + t
-  // ==> [y; 1] = T*[x;1], where T = [A t; 0 0 0 1]
+  // ==> [y; 1] = A'*[x;1], where A' = [A t; 0 0 0 1]
   // r'(lambda) = a' + lambda*d'
   // where a' = inv(A)*(a - t), d' = inv(A)*d'
-  memcpy(ray_transformed, ray_orig, sizeof(ray3D));
   
-  // ray_transformed->p0.px = ray_orig->p0.px;
-  // ray_transformed->p0.py = ray_orig->p0.py;
-  // ray_transformed->p0.pz = ray_orig->p0.pz;
-  // ray_transformed->p0.pw = 1;
+  memcpy(ray_transformed, ray_orig, sizeof(ray3D));
 
+  // compute a' = inv(A')*a
   matVecMult(obj->Tinv, &ray_transformed->p0);
   
-  // ray_transformed->d.px = ray_orig->d.dx;
-  // ray_transformed->d.py = ray_orig->d.dy;
-  // ray_transformed->d.pz = ray_orig->d.dz;
+  // d' = inv(A')*d'
   ray_transformed->d.pw = 0;
-
   matVecMult(obj->Tinv, &ray_transformed->d);
   ray_transformed->d.pw = 1;
 
@@ -106,18 +100,18 @@ inline void normalTransform(struct point3D *n_orig, struct point3D *n_transforme
  ///////////////////////////////////////////
   memcpy(n_transformed, n_orig, sizeof(point3D));
   double t[4][4];
-  n_transformed->pw = 0;
 
+  // compute A^-T
   for (int i = 0; i < 4; i ++){
     for (int j = 0; j < 4; j ++){
       t[i][j] = obj->Tinv[j][i]; 
     }
   }  
+  n_transformed->pw = 0;
   matVecMult(t, n_transformed);
-
-  n_transformed->pw = 1;
   normalize(n_transformed);
-
+  
+  n_transformed->pw = 1;
 }
 
 /////////////////////////////////////////////
@@ -313,7 +307,7 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
   // A*lambda^2 + 2Bx + C = 0
   // where A = d^2, B = (p0 - c) * d, C = (p0 - c) - 1, D = B^2 - AC
   // lambda = - B / A  (+/-) (sqrt(D) / A)
-  
+
   // fprintf(stderr, "sphere intersection\n");
   struct ray3D ray_transformed;
 
