@@ -233,6 +233,38 @@ struct object3D *newCyl(double ra, double rd, double rs, double rg, double r, do
  // TO DO:
  //	Complete the code to create and initialize a new cylinder object.
  ///////////////////////////////////////////////////////////////////////////////////////  
+  struct object3D *cylinder=(struct object3D *)calloc(1,sizeof(struct object3D));
+
+  if (!cylinder) fprintf(stderr,"Unable to allocate new cylinder, out of memory!\n");
+  else{
+    cylinder->alb.ra=ra;
+    cylinder->alb.rd=rd;
+    cylinder->alb.rs=rs;
+    cylinder->alb.rg=rg;
+    cylinder->col.R=r;
+    cylinder->col.G=g;
+    cylinder->col.B=b;
+    cylinder->alpha=alpha;
+    cylinder->r_index=r_index;
+    cylinder->shinyness=shiny;
+    cylinder->intersect=&cylIntersect;
+    cylinder->surfaceCoords=&cylCoordinates;
+    cylinder->randomPoint=&cylSample;
+    cylinder->texImg=NULL;
+    cylinder->photonMap=NULL;
+    cylinder->normalMap=NULL;
+    memcpy(&cylinder->T[0][0],&eye4x4[0][0],16*sizeof(double));
+    memcpy(&cylinder->Tinv[0][0],&eye4x4[0][0],16*sizeof(double));
+    cylinder->textureMap=&texMap;
+    cylinder->frontAndBack=0;
+    cylinder->photonMapped=0;
+    cylinder->normalMapped=0;
+    cylinder->isCSG=0;
+    cylinder->isLightSource=0;
+    cylinder->CSGnext=NULL;
+    cylinder->next=NULL;
+  }
+  return(cylinder);
 }
 
 
@@ -366,7 +398,14 @@ void cylIntersect(struct object3D *cylinder, struct ray3D *r, double *lambda, st
  /////////////////////////////////
  // TO DO: Complete this function.
  /////////////////////////////////  
-  fprintf(stderr, "clyinder intersection\n");
+
+  // idea: 
+  // 1. find intersection with "quadratic wall" (plane of x^2 + y^2 = 1)
+  // 2. test the z component of p(lambda*) against the contrast on z 
+  // 3. intersect the ray with the planes containing the case/cap
+  // 4. test the x and y components of p(lambda*) to see if interior contraints satisfied
+  // 5. take the intersection with the smallest positive lambda 
+
 }
 
 /////////////////////////////////////////////////////////////////
