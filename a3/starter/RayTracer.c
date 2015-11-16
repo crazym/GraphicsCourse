@@ -532,28 +532,28 @@ int main(int argc, char *argv[])
       // TO DO - complete the code that should be in this loop to do the
       //         raytracing!
       ///////////////////////////////////////////////////////////////////
-      // Calcuate camera coordinates of pixel i,j at point pc
       col.R = background.R;
       col.G = background.G;
       col.B = background.B;
+
       pc.px = cam->wl + i * du;
       pc.py = cam->wt + j * dv;
       pc.pz = cam->f;
       pc.pw = 1;
       matVecMult(cam->C2W, &pc);
 
-      // set direction d_i,j = P_i,j - e,
+      // set direction d_i,j = p_i,j - e,
       d.px= pc.px - cam->e.px;
       d.py= pc.py - cam->e.py;
       d.pz= pc.pz - cam->e.pz;
       d.pw= pc.pw - cam->e.pw;
       normalize(&d);
 
-      // create a ray and trace
+      // create a ray from camera to that point and trace
       ray = newRay(&pc, &d); 
       rayTrace(ray, 0, &col, NULL); 
       
-      // set color of this pixel i,j
+      // set color of this pixel stored in the array with correct offset
       int offset = (i + (j * sx)) * 3;
       *(rgbIm + (offset + 0)) = col.R * 255;
       *(rgbIm + (offset + 1)) = col.G * 255;

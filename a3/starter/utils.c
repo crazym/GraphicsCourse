@@ -245,7 +245,7 @@ struct object3D *newCyl(double ra, double rd, double rs, double rg, double r, do
     cylinder->col.G=g;
     cylinder->col.B=b;
     cylinder->alpha=alpha;
-    cylinder->r_index=r_index;
+    cylinder->r_index=R_index;
     cylinder->shinyness=shiny;
     cylinder->intersect=&cylIntersect;
     cylinder->surfaceCoords=&cylCoordinates;
