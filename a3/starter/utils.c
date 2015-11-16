@@ -401,10 +401,77 @@ void cylIntersect(struct object3D *cylinder, struct ray3D *r, double *lambda, st
 
   // idea: 
   // 1. find intersection with "quadratic wall" (plane of x^2 + y^2 = 1)
-  // 2. test the z component of p(lambda*) against the contrast on z 
+  //    plug p(lambda) in we have (a_x + lambda*d_x)^2 + (a_y + lambda*d_y)^2 = 1
+  //    solve for lambda^2*(a_x^2 + b_x^2) + lambda * (2*a_X*d_x + 2*a_y*d_y ) + (a_x^2 + a_y^2 -1) = 0
+  // 2. test the z component of p(lambda*) against the contraints on z 
   // 3. intersect the ray with the planes containing the case/cap
   // 4. test the x and y components of p(lambda*) to see if interior contraints satisfied
   // 5. take the intersection with the smallest positive lambda 
+  fprintf(stderr, "clyinder intersection\n");
+  struct ray3D ray_transformed;
+
+  // unit sphere centered at origin
+  struct point3D *center_orig = newPoint(0, 0, 0);
+  struct point3D p0, d;
+  double A, B, C, D, z1, z2, t1, t2;
+  double z_min = 0;
+  double z_max = 1;
+
+  rayTransform(r, &ray_transformed, cylinder);
+
+  p0 = ray_transformed.p0;
+  d = ray_transformed.d;
+
+  // reference: https://www.cl.cam.ac.uk/teaching/1999/AGraphHCI/SMAG/node2.html
+  A = d.px*d.px + d.py*d.py;
+  B = 2*p0.px*d.px + 2*p0.py*d.py;
+  C = p0.px*p0.px + p0.py*p0.py - 1;
+  D = B*B - 4*A*C;
+
+  if (D < 0) {
+    // no intersections
+    *lambda = -1;
+    return;
+  } else if (D==0) {
+    // one intersection lambda = - B / 2A
+    if (-B/A > 0) {
+      double t = - B/2*A;
+      double z = p0.pz + t * d.pz;
+      // if the intersection is within z components of cylinder
+      if (z < 1 and z > 0) {
+        *lambda = t;
+      }
+    }
+  } else {
+    // two intersections (t1 > t2)
+    t1 = - B/2*A + sqrt(D)/2*A;
+    t2 = - B/2*A - sqrt(D)/2*A;
+
+    // compute z components of intersections
+    z1 = p0.pz + t1 * d.pz;
+    z2 = p0.pz + t2 * d.pz;
+
+    
+    // if z1 and z2 lie either side of z_min,
+    // we know that the ray intersects the $z_{\min}$ end cap, 
+    // and can calculate the intersection point as: t = (z_min - po.pz) /d.pz
+    //A similar equation holds for the $z_{\max}$ end cap. 
+    if (z1 > z_min && z2 < z_min) {
+      *lambda = t1;
+    } else if (z1 > z_min && z2 >z_min) {
+      *lambda = t2;
+    } else {
+      *lambda = -1;
+    }    
+  } 
+
+  rayPosition(&ray_transformed, *lambda, p);
+  // normal for canonical sphere at p is the vector from sphere center (origin)
+  // which equals to p
+  normalTransform(p, n, cylinder);
+  r->rayPos(r, *lambda, p);
+
+  normalize(n);
 
 }
 

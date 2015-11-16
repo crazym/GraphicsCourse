@@ -45,7 +45,7 @@ ________________________________________________________________________________
             set the color
 
 - Existing problems:
-    I run out of time and was unable to finish the Cylinder section. There were not enough material on Cylinder Intersection, and searching online I got tons of complicated and different coverages which added more confusion; nor is there a scene built for testing, so I just left it to the last miniute thinking it's basically the same thing as plane and sphere, but then realized it is hard to implement and test. Hopefull I can get it done in A4.
+    I run out of time and was unable to test the Cylinder section. There were not enough material on Cylinder Intersection, and searching online added a few more confusion; nor is there a scene built for testing, so I just left it to the last miniute thinking it's basically the same thing as plane and sphere, but then realized it is hard to test.... Hopefull I can get it done in A4.
 
 - What to study:
 All of these topics....
