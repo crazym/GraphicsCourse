@@ -258,15 +258,15 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
     /* Global Component */
 
     if (depth < MAX_DEPTH){
-      // compute mirror direction: ms = - d + 2 * dot(d, n) * n
+      // compute mirror direction: ms = - 2 * dot(d, n) * n + d
       double temp_dot_value = dot(&ray->d, n);
-      ms.px = 2 * temp_dot_value * n->px;
-      ms.py = 2 * temp_dot_value * n->py;
-      ms.pz = 2 * temp_dot_value * n->pz;
+      ms.px = - 2 * temp_dot_value * n->px;
+      ms.py = - 2 * temp_dot_value * n->py;
+      ms.pz = - 2 * temp_dot_value * n->pz;
       ms.pw = 1;
       // construct new mirror direction
       // memcpy(&m, &ray->d, sizeof(struct point3D));
-      subVectors(&ray->d, &ms);
+      addVectors(&ray->d, &ms);
       normalize(&ms);
 
       // If OBJ has specular reflection
@@ -274,7 +274,7 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
         // create the ray from intersection point p along mirror direction 
         ref_ray = newRay(p, &ms);
         rayTrace(ref_ray, depth++, &E_spec, obj);
-
+        // add reflected color E_spec in, scaled by rg
         tmp_col.R += obj->alb.rg * E_spec.R;
         tmp_col.G += obj->alb.rg * E_spec.G;
         tmp_col.B += obj->alb.rg * E_spec.B;
@@ -346,28 +346,26 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
  //            originates so you can discard self-intersections due to numerical
  //            errors. NULL for rays originating from the center of projection. 
  
- double lambda;		// Lambda at intersection
- double a,b;		// Texture coordinates
- struct object3D *obj;	// Pointer to object at intersection
- struct point3D p;	// Intersection point
- struct point3D n;	// Normal at intersection
- struct colourRGB I;	// Colour returned by shading function
+  double lambda;		// Lambda at intersection
+  double a,b;		// Texture coordinates
+  struct object3D *obj;	// Pointer to object at intersection
+  struct point3D p;	// Intersection point
+  struct point3D n;	// Normal at intersection
+  struct colourRGB I;	// Colour returned by shading function
 
- if (depth>MAX_DEPTH)	// Max recursion depth reached. Return invalid colour.
- {
-  col->R=-1;
-  col->G=-1;
-  col->B=-1;
-  return;
- }
+  if (depth>MAX_DEPTH)	// Max recursion depth reached. Return invalid colour.
+  {
+    col->R=-1;
+    col->G=-1;
+    col->B=-1;
+    return;
+  }
 
- // fprintf(stderr, "before hitting\n");
  ///////////////////////////////////////////////////////
  // TO DO: Complete this function. Refer to the notes
  // if you are unsure what to do here.
  ///////////////////////////////////////////////////////
   findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
-  // fprintf(stderr, "after hitting\n");
   if (lambda > 0) {
     rtShade(obj, &p, &n, ray, depth, a, b, &I);
     col->R = I.R;

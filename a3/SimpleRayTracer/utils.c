@@ -308,6 +308,12 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
  /////////////////////////////////
  // TO DO: Complete this function.
  /////////////////////////////////
+  // ray(lambda) = p0 + lambda*d
+  // norm( ray(lambda) - c) = 1
+  // A*lambda^2 + 2Bx + C = 0
+  // where A = d^2, B = (p0 - c) * d, C = (p0 - c) - 1, D = B^2 - AC
+  // lambda = - B / A  (+/-) (sqrt(D) / A)
+  
   // fprintf(stderr, "sphere intersection\n");
   struct ray3D ray_transformed;
 
@@ -315,13 +321,7 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
   struct point3D *center_orig = newPoint(0, 0, 0);
   struct point3D *sub_a_c;
   double A, B, C, D;
-  // memcpy(ray_transformed, ray, sizeof(struct ray3D));
 
-  // ray(lambda) = p0 + lambda*d
-  // norm( ray(lambda) - c) = 1
-  // A*lambda^2 + 2Bx + C = 0
-  // where A = d^2, B = (p0 - c) * d, C = (p0 - c) - 1, D = B^2 - AC
-  // lambda = - B / A  (+/-) (sqrt(D) / A)
   rayTransform(ray, &ray_transformed, sphere);
 
   sub_a_c = &ray_transformed.p0;
