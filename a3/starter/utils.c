@@ -51,10 +51,10 @@ struct pointLS *newPLS(struct point3D *p0, double r, double g, double b)
  if (!ls) fprintf(stderr,"Out of memory allocating light source!\n");
  else
  {
-  memcpy(&ls->p0,p0,sizeof(struct point3D));	// Copy light source location
+  memcpy(&ls->p0,p0,sizeof(struct point3D));  // Copy light source location
 
-  ls->col.R=r;					// Store light source colour and
-  ls->col.G=g;					// intensity
+  ls->col.R=r;          // Store light source colour and
+  ls->col.G=g;          // intensity
   ls->col.B=b;
  }
  return(ls);
@@ -231,7 +231,7 @@ struct object3D *newCyl(double ra, double rd, double rs, double rg, double r, do
 {
  ///////////////////////////////////////////////////////////////////////////////////////
  // TO DO:
- //	Complete the code to create and initialize a new cylinder object.
+ // Complete the code to create and initialize a new cylinder object.
  ///////////////////////////////////////////////////////////////////////////////////////  
   struct object3D *cylinder=(struct object3D *)calloc(1,sizeof(struct object3D));
 
@@ -270,7 +270,7 @@ struct object3D *newCyl(double ra, double rd, double rs, double rg, double r, do
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // TO DO:
-//	Complete the functions that compute intersections for the canonical plane
+//  Complete the functions that compute intersections for the canonical plane
 //      and canonical sphere with a given ray. This is the most fundamental component
 //      of the raytracer.
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -565,9 +565,9 @@ void texMap(struct image *img, double a, double b, double *R, double *G, double 
  // interpolation to obtain the texture colour.
  //////////////////////////////////////////////////
 
- *(R)=0;	// Returns black - delete this and
- *(G)=0;	// replace with your code to compute
- *(B)=0;	// texture colour at (a,b)
+ *(R)=0;  // Returns black - delete this and
+ *(G)=0;  // replace with your code to compute
+ *(B)=0;  // texture colour at (a,b)
  return;
 }
 
@@ -586,8 +586,8 @@ void alphaMap(struct image *img, double a, double b, double *alpha)
  // interpolation to obtain the texture colour.
  //////////////////////////////////////////////////
  
- *(alpha)=1;	// Returns 1 which means fully opaque. Replace
- return;	// with your code if implementing alpha maps.
+ *(alpha)=1;  // Returns 1 which means fully opaque. Replace
+ return;  // with your code if implementing alpha maps.
 }
 
 
@@ -905,8 +905,8 @@ struct view *setupView(struct point3D *e, struct point3D *g, struct point3D *up,
  }
 
  // Set up camera center and axes
- c->e.px=e->px;		// Copy camera center location, note we must make sure
- c->e.py=e->py;		// the camera center provided to this function has pw=1
+ c->e.px=e->px;   // Copy camera center location, note we must make sure
+ c->e.py=e->py;   // the camera center provided to this function has pw=1
  c->e.pz=e->pz;
  c->e.pw=1;
 
@@ -1062,7 +1062,7 @@ struct image *readPPMimage(const char *filename)
   im->sx=sizx;
   im->sy=sizy;
 
-  fgets(&line[0],9,f);  	                // Read the remaining header line
+  fgets(&line[0],9,f);                    // Read the remaining header line
   fprintf(stderr,"%s\n",line);
   tmp=(unsigned char *)calloc(sizx*sizy*3,sizeof(unsigned char));
   fRGB=(double *)calloc(sizx*sizy*3,sizeof(double));
@@ -1138,7 +1138,7 @@ struct image *readPGMimage(const char *filename)
   im->sx=sizx;
   im->sy=sizy;
 
-  fgets(&line[0],9,f);  	                // Read the remaining header line
+  fgets(&line[0],9,f);                    // Read the remaining header line
   tmp=(unsigned char *)calloc(sizx*sizy,sizeof(unsigned char));
   fRGB=(double *)calloc(sizx*sizy,sizeof(double));
   if (tmp==NULL||fRGB==NULL)
@@ -1237,11 +1237,11 @@ void cleanup(struct object3D *o_list, struct pointLS *l_list, struct textureNode
  struct pointLS *r, *s;
  struct textureNode *t, *u;
 
- p=o_list;		// De-allocate all memory from objects in the list
+ p=o_list;    // De-allocate all memory from objects in the list
  while(p!=NULL)
  {
   q=p->next;
-  if (p->photonMap!=NULL)	// If object is photon mapped, free photon map memory
+  if (p->photonMap!=NULL) // If object is photon mapped, free photon map memory
   {
    if (p->photonMap->rgbdata!=NULL) free(p->photonMap->rgbdata);
    free(p->photonMap);
@@ -1250,7 +1250,7 @@ void cleanup(struct object3D *o_list, struct pointLS *l_list, struct textureNode
   p=q;
  }
 
- r=l_list;		// Delete light source list
+ r=l_list;    // Delete light source list
  while(r!=NULL)
  {
   s=r->next;
@@ -1258,7 +1258,7 @@ void cleanup(struct object3D *o_list, struct pointLS *l_list, struct textureNode
   r=s;
  }
 
- t=t_list;		// Delete texture Images
+ t=t_list;    // Delete texture Images
  while(t!=NULL)
  {
   u=t->next;
@@ -1268,4 +1268,3 @@ void cleanup(struct object3D *o_list, struct pointLS *l_list, struct textureNode
   t=u;
  }
 }
-

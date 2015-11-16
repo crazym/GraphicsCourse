@@ -22,7 +22,7 @@ A. PLEASE ANSWER THE FOLLOWING QUESTIONS (your assignment will not be graded oth
    source (the penalties/grades will be assesed according to the policy stated in 
    http://www.cs.brown.edu/~ls/teaching08.html)
 
-   ___Yes   ___No
+   ___Yes   _No__No
 
 
    If you checked yes, please supply the following
@@ -48,11 +48,11 @@ B. PLACE AN (X) IN FRONT OF PORTIONS OF THE ASSIGNMENT THAT YOU COMPLETED IN FUL
 [10 marks]  Intersection              X
 	    for square
 
-[10 marks]  Intersection	            X
+[10 marks]  Intersection              X
             for spheres
 
 [10 marks]  Intersection
-	    for cylinders
+	    for cylinders                              X
 	    
 [15 marks]  Normal transforms         X
 
