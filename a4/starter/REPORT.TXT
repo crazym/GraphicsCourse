@@ -1,0 +1,55 @@
+CSC D18 - Fall 2015 - A3 Report
+
+Student Name: Maoting Zhang
+Student Number: 999590633(zhangmao)
+
+Write your report below.
+__________________________________________________________________________________
+
+- Process
+    I read through the codebase and listed all the functions to be implemented first, and had trouble understading the specific functionality/usage of intersect() and ray/normal transform(). Therefore I started with following the pseudocode to implement rayTrace(), findFirstHit(), and the ambient term in rtShade(). Then I realized intersections needs to be implemented before the shading would work. So I moved to implement PlaneIntersect(), and figured when the ray/normal transformation would be needed.
+    I spent pretty much time working on the correct transformation function because of the homogeneous coordinates are different from what we have on lecture notes, the rest of intersection functions were tricky as well because of the pointers, I used a lot of print statements to trace the problem.
+    After the intersection were implemented correctly, the image turned to show up and the rest of the phong model was okay once you figured out how to implement one term in the model.
+
+- Code Description
+    * Ray Casting: main(), rayTrace(), findFirstHit()
+    * Intersections: planeIntersect(), sphereIntersect(), cylinderIntersect()
+    * Normal transforms: normalTransform(), rayTransform()
+    * Local Phong: rtShade()
+    * Shadows: rtShade()    
+    * Global reflection: rtShade()
+
+    in main() we loop through each pixel:
+        cast a ray from camera to the pixel
+        // rayTrace()
+        tracing it:
+            // findFirstHit()
+            for each obj in object lists:
+                // ~Intersect()
+                - compute intersection point:
+                    // rayTransform()
+                    transform the ray, compute intersection for canonical object, and get lambda & normal, 
+                    // normalTransform()
+                    compute the intersection point and tranform the normal to get those for the tranformed object
+            find the smallest positive lambda to get the closest object
+            // rtShade() at intersection point p
+            for each LS:
+                // check if the object is in shadow
+                compute the first hit and get the lambda
+                add the ambient term
+                if lambda is not in shadow:
+                    add diffuse and specular
+                add global reflection
+            return color
+            // in main()
+            set the color
+
+- Existing problems:
+    I run out of time and was unable to test the Cylinder section. There were not enough material on Cylinder Intersection, and searching online added a few more confusion; nor is there a scene built for testing, so I just left it to the last miniute thinking it's basically the same thing as plane and sphere, but then realized it is hard to test.... Hopefull I can get it done in A4.
+
+- What to study:
+All of these topics....
+Geometry (points, vectors, planes, spheres, intersections, normals, etc.)
+Object transformations
+Projection and coordinate frames
+Illumination (the Phong model, basically)
