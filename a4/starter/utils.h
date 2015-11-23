@@ -208,7 +208,7 @@ void alphaMap(struct image *img, double a, double b, double *R, double *G, doubl
 void insertObject(struct object3D *o, struct object3D **list);
 void insertPLS(struct pointLS *l, struct pointLS **list);
 void addAreaLight(double sx, double sy, double nx, double ny, double nz,\
-                  double tx, double ty, double tz, int lx, int ly,\
+                  double tx, double ty, double tz, int N,\
                   double r, double g, double b, struct object3D **o_list, struct pointLS **l_list);
 
 // Function to set up the camera and viewing coordinate frame.

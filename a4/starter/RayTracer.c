@@ -108,12 +108,17 @@ void buildScene(void)
 
  // Insert a single point light source. We set up its position as a point structure, and specify its
  // colour in terms of RGB (in [0,1]).
- p.px=0;
- p.py=25.5;
- p.pz=-3.5;
- p.pw=1;
- l=newPLS(&p,.95,.95,.95);
- insertPLS(l,&light_list);
+ // p.px=0;
+ // p.py=25.5;
+ // p.pz=-3.5;
+ // p.pw=1;
+ // l=newPLS(&p,.95,.95,.95);
+ // insertPLS(l,&light_list);
+
+   addAreaLight(1.5,1.5,0,-1,0,
+               0,25.5,-3.5,28,
+               0.95,0.95,0.95 ,
+               &object_list, &light_list);
 
  // End of simple scene for Assignment 3
  // Keep in mind that you can define new types of objects such as cylinders and parametric surfaces,
@@ -168,7 +173,7 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
   {
     // Get object colour from the texture given the texture coordinates (a,b), and the texturing function
     // for the object. Note that we will use textures also for Photon Mapping.
-    fprintf(stderr, "texture coordinates in rtShade: %f, %f\n", a, b);
+    // fprintf(stderr, "texture coordinates in rtShade: %f, %f\n", a, b);
     obj->textureMap(obj->texImg,a,b,&R,&G,&B);
   }
 
@@ -330,7 +335,7 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
         *n = temp_n;
         *obj = current_obj;
 
-        fprintf(stderr, "texture coordinates in findFirstHit: %f, %f\n", coor_a, coor_b);
+        // fprintf(stderr, "texture coordinates in findFirstHit: %f, %f\n", coor_a, coor_b);
         // update for texture
         *a = coor_a;
         *b = coor_b;
@@ -375,7 +380,7 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
  ///////////////////////////////////////////////////////
   findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
   if (lambda > 0) {
-    fprintf(stderr, "texture coordinates in rayTrace: %f, %f\n", a, b);
+    // fprintf(stderr, "texture coordinates in rayTrace: %f, %f\n", a, b);
     rtShade(obj, &p, &n, ray, depth, a, b, &I);
     col->R = I.R;
     col->G = I.G;
@@ -531,8 +536,10 @@ int main(int argc, char *argv[])
   fprintf(stderr,"\n");
 
   fprintf(stderr,"Rendering row: ");
+  #pragma omp parallel for schedule(dynamic,32) shared(rgbIm, object_list, light_list, texture_list) private(j)
   for (j=0;j<sx;j++)		// For each of the pixels in the image
   {
+    #pragma omp parallel for private(pc, d, col, ray, i)
     fprintf(stderr,"%d/%d, ",j,sx);
     for (i=0;i<sx;i++)
     {

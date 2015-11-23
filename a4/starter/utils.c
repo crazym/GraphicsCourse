@@ -498,7 +498,25 @@ void planeCoordinates(struct object3D *plane, double a, double b, double *x, dou
  
  /////////////////////////////////
  // TO DO: Complete this function.
- /////////////////////////////////   
+ /////////////////////////////////
+   point3D basePoint;
+  basePoint.px = -1.0 + 2.0 * a;
+  basePoint.py = -1.0 + 2.0 * (1.0-b);
+  basePoint.pz = 0.0;
+  basePoint.pw = 1.0;
+  // After creating point on canonical plane x 2, I then multiply by the transformation matrix.
+  matVecMult(plane->T, &basePoint);
+  // I have to then revert back to a homogenous system, since pw is no longer 1.
+  basePoint.px /= basePoint.pw;
+  basePoint.py /= basePoint.pw;
+  basePoint.pz /= basePoint.pw;
+  //basePoint.pw /= basePoint.pw;
+  // After I should have my X Y Z.
+  // printf("PLANE COORDINATES SETTING.\n");
+  *x = basePoint.px;
+  *y = basePoint.py;
+  *z = basePoint.pz;
+  // printf("PLANE COORDINATES FINISHED.\n");   
 }
 
 void sphereCoordinates(struct object3D *sphere, double a, double b, double *x, double *y, double *z)
@@ -532,6 +550,8 @@ void planeSample(struct object3D *plane, double *x, double *y, double *z)
  /////////////////////////////////
  // TO DO: Complete this function.
  /////////////////////////////////   
+  planeCoordinates(plane,drand48(),drand48(),x,y,z);
+
 }
 
 void sphereSample(struct object3D *sphere, double *x, double *y, double *z)
@@ -659,7 +679,7 @@ void texMap(struct image *img, double a, double b, double *R, double *G, double 
   // Make sure position is within boundary
   pos_a = a * img->sx;
   pos_b = b * img->sy;
-  fprintf(stderr, "alpha and beta position: %f, %f\n", pos_a, pos_b);
+  // fprintf(stderr, "alpha and beta position: %f, %f\n", pos_a, pos_b);
   if (pos_a >= img->sx) pos_a = img->sx-1;
   if (pos_b >= img->sy) pos_b = img->sy-1;
 
@@ -738,6 +758,41 @@ void addAreaLight(double sx, double sy, double nx, double ny, double nz,\
   //       light source's object surface within rtShade(). This is a bit more tricky
   //       but reduces artifacts significantly. If you do that, then there is no need
   //       to insert a series of point lightsources in this function.
+  struct point3D p;
+  struct pointLS *l;
+  struct object3D *plane = newPlane(1,1,1,0,r,g,b,1,1,6);
+  plane->isLightSource = 1; // set as light source
+  Scale(plane, sx, sy, sy);
+
+  double theta = acos(nz / (sqrt(pow(nx, 2) + pow(ny, 2) + pow(nz, 2))));
+  double phi = atan(ny / nx);
+  RotateZ(plane, theta);
+  RotateX(plane, phi);
+
+  Translate(plane, tx, ty, tz);
+  invert(&plane->T[0][0], &plane->Tinv[0][0]);
+  insertObject(plane, o_list);
+
+  
+  // struct point3D *p;
+  for (int i = 0; i < N; i ++){
+    double x, y, z;
+    planeSample(plane, &x, &y, &z);
+    // sx += nx * 0.0001;
+    // sy += ny * 0.0001;
+    // sz += nz * 0.0001;
+
+    // struct point3D *p = newPoint(0, 25, -3.5);
+    p.px = x + (nx * 0.0001);
+    p.py = y + (ny * 0.0001);
+    p.pz = z + (nz * 0.0001);
+    // p = newPoint(x, y, z);
+    p.pw = 1.0;
+    l = newPLS(&p, r/(double)N, g/(double)N, b/(double)N);
+    insertPLS(l, l_list);
+    // free(p);
+    // printf("INSERTED NEW LIGHT @ [%f, %f, %f] w/ [%f, %f, %f]\n", p->px, p->py, p->pz, r/N, g/N, b/N);
+  }
 }
 
 ///////////////////////////////////
