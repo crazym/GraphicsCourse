@@ -71,7 +71,6 @@ void buildScene(void)
  RotateZ(o,PI/4);					
  Translate(o,2.0,2.5,1.5);
  invert(&o->T[0][0],&o->Tinv[0][0]);			// Compute the inverse transform * DON'T FORGET TO DO THIS! *
-
  // If needed, this is how you load a texture map
  // loadTexture(o,"./Texture/mosaic2.ppm",1,&texture_list);	// This loads a texture called 'mosaic2.ppm'. The
 								// texture gets added to the texture list, and a
@@ -84,7 +83,8 @@ void buildScene(void)
 								// * DO NOT * try to free image data loaded in this
 								// way, the cleanup function already provided will do
 								// this at the end.
- 
+  loadTexture(o,"./texture/decorative_pattern.ppm", 1, &texture_list);
+
   insertObject(o,&object_list);			// <-- If you don't insert the object into the object list,
 						//     nothing happens! your object won't be rendered.
 
@@ -94,6 +94,7 @@ void buildScene(void)
  RotateZ(o,-PI/1.5);
  Translate(o,-2.2,1.75,1.35);
  invert(&o->T[0][0],&o->Tinv[0][0]);
+ loadTexture(o,"./texture/decorative_pattern.ppm", 1, &texture_list);
  insertObject(o,&object_list);
 
  o=newPlane(.05,.75,.05,.05,.55,.8,.75,1,1,2);
@@ -102,6 +103,7 @@ void buildScene(void)
  RotateX(o,PI/2);
  Translate(o,0,-4,5);
  invert(&o->T[0][0],&o->Tinv[0][0]);
+ loadTexture(o,"./texture/blue_flower.ppm", 1, &texture_list);
  insertObject(o,&object_list);
 
  // Insert a single point light source. We set up its position as a point structure, and specify its
@@ -166,11 +168,12 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
   {
     // Get object colour from the texture given the texture coordinates (a,b), and the texturing function
     // for the object. Note that we will use textures also for Photon Mapping.
+    fprintf(stderr, "texture coordinates in rtShade: %f, %f\n", a, b);
     obj->textureMap(obj->texImg,a,b,&R,&G,&B);
   }
 
  //////////////////////////////////////////////////////////////
- // TO DO: Implement this function. Refer to the notes for
+ // TODO: Implement this function. Refer to the notes for
  // details about the shading model.
  //////////////////////////////////////////////////////////////
 
@@ -308,7 +311,7 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
  //   *a, *b  -  Pointers toward double variables so you can return the texture coordinates a,b at the intersection point
 
  /////////////////////////////////////////////////////////////
- // TO DO: Implement this function. See the notes for
+ // TODO: Implement this function. See the notes for
  // reference of what to do in here
  /////////////////////////////////////////////////////////////
 
@@ -326,6 +329,11 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
         *p = temp_p;
         *n = temp_n;
         *obj = current_obj;
+
+        fprintf(stderr, "texture coordinates in findFirstHit: %f, %f\n", coor_a, coor_b);
+        // update for texture
+        *a = coor_a;
+        *b = coor_b;
       }
     }
     current_obj = current_obj->next;
@@ -362,11 +370,12 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
   }
 
  ///////////////////////////////////////////////////////
- // TO DO: Complete this function. Refer to the notes
+ // TODO: Complete this function. Refer to the notes
  // if you are unsure what to do here.
  ///////////////////////////////////////////////////////
   findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
   if (lambda > 0) {
+    fprintf(stderr, "texture coordinates in rayTrace: %f, %f\n", a, b);
     rtShade(obj, &p, &n, ray, depth, a, b, &I);
     col->R = I.R;
     col->G = I.G;
@@ -500,7 +509,7 @@ int main(int argc, char *argv[])
 
   // Do the raytracing
   //////////////////////////////////////////////////////
-  // TO DO: You will need code here to do the raytracing
+  // TODO: You will need code here to do the raytracing
   //        for each pixel in the image. Refer to the
   //        lecture notes, in particular, to the
   //        raytracing pseudocode, for details on what
@@ -529,7 +538,7 @@ int main(int argc, char *argv[])
     {
 
       ///////////////////////////////////////////////////////////////////
-      // TO DO - complete the code that should be in this loop to do the
+      // TODO - complete the code that should be in this loop to do the
       //         raytracing!
       ///////////////////////////////////////////////////////////////////
       col.R = background.R;

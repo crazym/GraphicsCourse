@@ -69,7 +69,7 @@ inline void rayTransform(struct ray3D *ray_orig, struct ray3D *ray_transformed, 
  // use the intersection test for the canonical object. Note that this has to be done carefully!
 
  ///////////////////////////////////////////
- // TO DO: Complete this function
+ // TODO: Complete this function
  ///////////////////////////////////////////
 
   // y = A*x + t
@@ -96,7 +96,7 @@ inline void normalTransform(struct point3D *n_orig, struct point3D *n_transforme
  // n_transformed=A^-T*n normalized.
 
  ///////////////////////////////////////////
- // TO DO: Complete this function
+ // TODO: Complete this function
  ///////////////////////////////////////////
   memcpy(n_transformed, n_orig, sizeof(point3D));
   double t[4][4];
@@ -230,7 +230,7 @@ struct object3D *newSphere(double ra, double rd, double rs, double rg, double r,
 struct object3D *newCyl(double ra, double rd, double rs, double rg, double r, double g, double b, double alpha, double R_index, double shiny)
 {
  ///////////////////////////////////////////////////////////////////////////////////////
- // TO DO:
+ // TODO:
  // Complete the code to create and initialize a new cylinder object.
  ///////////////////////////////////////////////////////////////////////////////////////  
   struct object3D *cylinder=(struct object3D *)calloc(1,sizeof(struct object3D));
@@ -269,7 +269,7 @@ struct object3D *newCyl(double ra, double rd, double rs, double rg, double r, do
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
-// TO DO:
+// TODO:
 //  Complete the functions that compute intersections for the canonical plane
 //      and canonical sphere with a given ray. This is the most fundamental component
 //      of the raytracer.
@@ -313,6 +313,10 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
       if (p->px < 1 && p->px > -1 && p->py < 1 && p->py > -1) {
         // if so, assign the same lambda for transformed object
         *lambda = canon_lambda;
+        // Texure Mapping: 
+        // update cannonical plane (2x2 square centerd at (0,0)) to a [0,1]-square
+        *a = (p->px + 1) / 2;
+        *b = (p->py + 1) / 2;
         // assign the rayPosition and transform normal n
         ray->rayPos(ray, *lambda, p);
         normalTransform(n_orig, n, plane);
@@ -332,7 +336,7 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
  // between the specified ray and the specified canonical sphere.
 
  /////////////////////////////////
- // TO DO: Complete this function.
+ // TODO: Complete this function.
  /////////////////////////////////
   // ray(lambda) = p0 + lambda*d
   // norm( ray(lambda) - c) = 1
@@ -380,7 +384,8 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
     } else {
       *lambda = -1;
     }    
-  } 
+  }
+
   rayPosition(&ray_transformed, *lambda, p);
   // normal for canonical sphere at p is the vector from sphere center (origin)
   // which equals to p
@@ -388,6 +393,12 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
   ray->rayPos(ray, *lambda, p);
 
   normalize(n);
+
+  // Texure Mapping: 
+  // update cannonical sphere (centerd at (0,0) with radius 1) to a [0,1]-square
+  // using its normals
+  *a = asin(n->px) / PI + 0.5;
+  *b = asin(n->py) / PI + 0.5;
 }
 
 void cylIntersect(struct object3D *cylinder, struct ray3D *r, double *lambda, struct point3D *p, struct point3D *n, double *a, double *b)
@@ -632,10 +643,32 @@ void texMap(struct image *img, double a, double b, double *R, double *G, double 
  // interpolation to obtain the texture colour.
  //////////////////////////////////////////////////
 
- *(R)=0;  // Returns black - delete this and
- *(G)=0;  // replace with your code to compute
- *(B)=0;  // texture colour at (a,b)
- return;
+ // *(R)=0;  // Returns black - delete this and
+ // *(G)=0;  // replace with your code to compute
+ // *(B)=0;  // texture colour at (a,b)
+ // return;
+    // Check if pixel in bound
+  if (a<0) a=0;
+  if (b<0) b=0;
+  if (a>1) a=1;
+  if (b>1) b=1;
+
+  int pos_a, pos_b;         // Coordinates for pixel
+  double *ip=(double *)img->rgbdata;      // Pointer to image color
+
+  // Make sure position is within boundary
+  pos_a = a * img->sx;
+  pos_b = b * img->sy;
+  fprintf(stderr, "alpha and beta position: %f, %f\n", pos_a, pos_b);
+  if (pos_a >= img->sx) pos_a = img->sx-1;
+  if (pos_b >= img->sy) pos_b = img->sy-1;
+
+  // Update image color
+  *R = *(ip + ((pos_a + (pos_b * img->sx)) * 3) + 0);
+  *G = *(ip + ((pos_a + (pos_b * img->sx)) * 3) + 1);
+  *B = *(ip + ((pos_a + (pos_b * img->sx)) * 3) + 2);
+
+  return;
 }
 
 void alphaMap(struct image *img, double a, double b, double *alpha)
