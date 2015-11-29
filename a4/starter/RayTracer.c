@@ -445,6 +445,7 @@ int main(int argc, char *argv[])
   struct colourRGB background;   // Background colour
   int i,j;			// Counters for pixel coordinates
   unsigned char *rgbIm;
+  int offset;
 
   if (argc<5)
   {
@@ -570,8 +571,8 @@ int main(int argc, char *argv[])
   #pragma omp parallel for schedule(dynamic,32) shared(rgbIm, object_list, light_list, texture_list) private(j)
   for (j=0;j<sx;j++)		// For each of the pixels in the image
   {
-    #pragma omp parallel for private(pc, d, col, ray, i)
     fprintf(stderr,"%d/%d, ",j,sx);
+    #pragma omp parallel for private(pc, d, col, ray, offset, i)
     for (i=0;i<sx;i++)
     {
 
@@ -601,7 +602,7 @@ int main(int argc, char *argv[])
       rayTrace(ray, 0, &col, NULL); 
       
       // set color of this pixel stored in the array with correct offset
-      int offset = (i + (j * sx)) * 3;
+      offset = (i + (j * sx)) * 3;
       *(rgbIm + (offset + 0)) = col.R * 255;
       *(rgbIm + (offset + 1)) = col.G * 255;
       *(rgbIm + (offset + 2)) = col.B * 255;
