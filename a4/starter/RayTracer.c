@@ -449,7 +449,12 @@ int main(int argc, char *argv[])
   struct colourRGB background;   // Background colour
   int i,j;			// Counters for pixel coordinates
   unsigned char *rgbIm;
-  int offset;
+  int offset; // for putting color to the array
+
+  // for anti-aliasing
+  int aa_samples; // number of samples K
+  int k;
+  struct colourRGB aa_color_sum; // sum of colors at all sample locations
 
   if (argc<5)
   {
@@ -571,12 +576,17 @@ int main(int argc, char *argv[])
   printmatrix(cam->W2C);
   fprintf(stderr,"\n");
 
+  if (!antialiasing) aa_samples =1;
+  else aa_samples = 5;
+  // fprintf(stderr,"num of samples: %d\n",aa_samples);
+
   fprintf(stderr,"Rendering row: ");
-  #pragma omp parallel for schedule(dynamic,32) shared(rgbIm, object_list, light_list, texture_list) private(j)
+  #pragma omp parallel for schedule(dynamic,32) shared(aa_samples, rgbIm, object_list, light_list, texture_list) private(j)
   for (j=0;j<sx;j++)		// For each of the pixels in the image
   {
     fprintf(stderr,"%d/%d, ",j,sx);
-    #pragma omp parallel for private(pc, d, col, ray, offset, i)
+    #pragma omp parallel for private(k, pc, d, ray, col, aa_color_sum, offset, i)
+    // #pragma omp parallel for shared(aa_color_sum, offset, i) private (k)
     for (i=0;i<sx;i++)
     {
 
@@ -584,35 +594,52 @@ int main(int argc, char *argv[])
       // TODO - complete the code that should be in this loop to do the
       //         raytracing!
       ///////////////////////////////////////////////////////////////////
-      col.R = background.R;
-      col.G = background.G;
-      col.B = background.B;
 
-      pc.px = cam->wl + i * du;
-      pc.py = cam->wt + j * dv;
-      pc.pz = cam->f;
-      pc.pw = 1;
-      matVecMult(cam->C2W, &pc);
+      // initialize color holder for calculating antialiased color
+      aa_color_sum.R = 0;
+      aa_color_sum.G = 0;
+      aa_color_sum.B = 0;
+      // if anti-aliasing turned off aa_samples is 1, so the same result as no anti-alising
+      // #pragma omp parallel for private (k, pc, d, ray, col)
+      for (k = 0; k < aa_samples; k++) {
+        col.R = background.R;
+        col.G = background.G;
+        col.B = background.B;
 
-      // set direction d_i,j = p_i,j - e,
-      d.px= pc.px - cam->e.px;
-      d.py= pc.py - cam->e.py;
-      d.pz= pc.pz - cam->e.pz;
-      d.pw= pc.pw - cam->e.pw;
-      normalize(&d);
+        pc.px = cam->wl + (i+drand48()-0.5) * du;
+        pc.py = cam->wt + (j+drand48()-0.5) * dv;
+        pc.pz = cam->f;
+        pc.pw = 1;
+        matVecMult(cam->C2W, &pc);
 
-      // create a ray from camera to that point and trace
-      ray = newRay(&pc, &d); 
-      rayTrace(ray, 0, &col, NULL); 
+        // set direction d_i,j = p_i,j - e,
+        d.px= pc.px - cam->e.px;
+        d.py= pc.py - cam->e.py;
+        d.pz= pc.pz - cam->e.pz;
+        d.pw= pc.pw - cam->e.pw;
+        normalize(&d);
+
+        // create a ray from camera to that point and trace
+        ray = newRay(&pc, &d); 
+        rayTrace(ray, 0, &col, NULL); 
+        
+        aa_color_sum.R += col.R;
+        aa_color_sum.G += col.G;
+        aa_color_sum.B += col.B;
       
+        /* Free memory */
+        free(ray);
+      }
+      // fprintf(stderr,"num of samples: %d\n",aa_samples);
+      // fprintf(stderr,"retrieved color: %G v.s. added: %G\n", col.G, aa_color_sum.G / aa_samples);
+
       // set color of this pixel stored in the array with correct offset
       offset = (i + (j * sx)) * 3;
-      *(rgbIm + (offset + 0)) = col.R * 255;
-      *(rgbIm + (offset + 1)) = col.G * 255;
-      *(rgbIm + (offset + 2)) = col.B * 255;
+      *(rgbIm + (offset + 0)) = (aa_color_sum.R / aa_samples) * 255;
+      *(rgbIm + (offset + 1)) = (aa_color_sum.G / aa_samples) * 255;
+      *(rgbIm + (offset + 2)) = (aa_color_sum.B / aa_samples) * 255;
 
-      /* Free memory */
-      free(ray);
+
     } // end for i
   } // end for j
 
