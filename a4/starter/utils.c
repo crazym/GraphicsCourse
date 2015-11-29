@@ -327,7 +327,8 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
     }
     normalize(n);
   }
-
+  free(n_orig);
+  free(known_point);
 }
 
 void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda, struct point3D *p, struct point3D *n, double *a, double *b)
@@ -399,6 +400,8 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
   // using its normals
   *a = asin(n->px) / PI + 0.5;
   *b = asin(n->py) / PI + 0.5;
+
+  free(center_orig);
 }
 
 void cylIntersect(struct object3D *cylinder, struct ray3D *r, double *lambda, struct point3D *p, struct point3D *n, double *a, double *b)
@@ -484,6 +487,7 @@ void cylIntersect(struct object3D *cylinder, struct ray3D *r, double *lambda, st
 
   normalize(n);
 
+  free(center_orig);
 }
 
 /////////////////////////////////////////////////////////////////

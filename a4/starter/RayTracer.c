@@ -167,8 +167,8 @@ void buildScene(void)
  //        transparency, and the overall visual quality of your result. Put some work into thinking
  //        about these elements when designing your scene.
  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
- 
-}
+   // free(o);
+ }
 
 void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct ray3D *ray, int depth, double a, double b, struct colourRGB *col)
 {
@@ -318,6 +318,7 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
         tmp_col.G += obj->alb.rg * E_spec.G;
         tmp_col.B += obj->alb.rg * E_spec.B;
       }
+      free(ref_ray);
     }
     current_ls = current_ls->next;
  }
@@ -327,6 +328,8 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
   col->G = min(tmp_col.G * G, 1);
   col->B = min(tmp_col.B * B, 1);
 
+  free(light_ray);
+  free(current_ls);
  return;
 }
 
@@ -374,6 +377,7 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
     }
     current_obj = current_obj->next;
   }
+  free(current_obj);
 
 }
 
@@ -421,7 +425,7 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
     col->G = 0;
     col->B = 0;
   }
-
+  // free(obj);
 }
 
 int main(int argc, char *argv[])
