@@ -322,6 +322,9 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
         *lambda = canon_lambda;
         // Texure Mapping: 
         // update cannonical plane (2x2 square centerd at (0,0)) to a [0,1]-square
+        // (a, b) starts from the upper left corner?
+        // need to flip the texture img
+        // hmm, or *b = 1 - (p->py + 1) / 2; don;t bother to change :P
         *a = (p->px + 1) / 2;
         *b = (p->py + 1) / 2;
         // assign the rayPosition and transform normal n
@@ -511,24 +514,18 @@ void planeCoordinates(struct object3D *plane, double a, double b, double *x, dou
  /////////////////////////////////
  // TO DO: Complete this function.
  /////////////////////////////////
-   point3D basePoint;
-  basePoint.px = -1.0 + 2.0 * a;
-  basePoint.py = -1.0 + 2.0 * (1.0-b);
-  basePoint.pz = 0.0;
-  basePoint.pw = 1.0;
-  // After creating point on canonical plane x 2, I then multiply by the transformation matrix.
-  matVecMult(plane->T, &basePoint);
-  // I have to then revert back to a homogenous system, since pw is no longer 1.
-  basePoint.px /= basePoint.pw;
-  basePoint.py /= basePoint.pw;
-  basePoint.pz /= basePoint.pw;
-  //basePoint.pw /= basePoint.pw;
-  // After I should have my X Y Z.
-  // printf("PLANE COORDINATES SETTING.\n");
-  *x = basePoint.px;
-  *y = basePoint.py;
-  *z = basePoint.pz;
-  // printf("PLANE COORDINATES FINISHED.\n");   
+  point3D can_point;
+  // update cannonical plane (2x2 square centerd at (0,0)) according to (a,b) in [0,1]-square
+  can_point.px = -1.0 + 2.0 * a;
+  can_point.py = -1.0 + 2.0 * b;
+  can_point.pz = 0.0;
+  can_point.pw = 1.0;
+  // transform to match the plane
+  matVecMult(plane->T, &can_point);
+  //?? is .pw still 1??
+  *x = can_point.px / can_point.pw;
+  *y = can_point.py / can_point.pw;
+  *z = can_point.pz / can_point.pw;
 }
 
 void sphereCoordinates(struct object3D *sphere, double a, double b, double *x, double *y, double *z)
@@ -679,26 +676,19 @@ void texMap(struct image *img, double a, double b, double *R, double *G, double 
  // *(G)=0;  // replace with your code to compute
  // *(B)=0;  // texture colour at (a,b)
  // return;
-    // Check if pixel in bound
-  if (a<0) a=0;
-  if (b<0) b=0;
-  if (a>1) a=1;
-  if (b>1) b=1;
 
-  int pos_a, pos_b;         // Coordinates for pixel
-  double *ip=(double *)img->rgbdata;      // Pointer to image color
+  int pos_a, pos_b;
+  double *img_color=(double *)img->rgbdata;
 
-  // Make sure position is within boundary
   pos_a = a * img->sx;
   pos_b = b * img->sy;
-  // fprintf(stderr, "alpha and beta position: %f, %f\n", pos_a, pos_b);
-  if (pos_a >= img->sx) pos_a = img->sx-1;
-  if (pos_b >= img->sy) pos_b = img->sy-1;
+  // if (pos_a!= 0.0 || pos_b!=0.0) fprintf(stderr, "alpha and beta position: %G, %G\n", pos_a, pos_b);
+
 
   // Update image color
-  *R = *(ip + ((pos_a + (pos_b * img->sx)) * 3) + 0);
-  *G = *(ip + ((pos_a + (pos_b * img->sx)) * 3) + 1);
-  *B = *(ip + ((pos_a + (pos_b * img->sx)) * 3) + 2);
+  *R = *(img_color + ((pos_a + (pos_b * img->sx)) * 3) + 0);
+  *G = *(img_color + ((pos_a + (pos_b * img->sx)) * 3) + 1);
+  *B = *(img_color + ((pos_a + (pos_b * img->sx)) * 3) + 2);
 
   return;
 }
@@ -720,23 +710,15 @@ void alphaMap(struct image *img, double a, double b, double *alpha)
  
  // *(alpha)=1;  // Returns 1 which means fully opaque. Replace
 // with your code if implementing alpha maps.
-  if (a<0) a=0;
-  if (b<0) b=0;
-  if (a>1) a=1;
-  if (b>1) b=1;
 
-  int pos_a, pos_b;         // Coordinates for pixel
-  double *ip=(double *)img->rgbdata;      // Pointer to image color
+  int pos_a, pos_b;
+  double *img_color=(double *)img->rgbdata;
 
-  // Make sure position is within boundary
   pos_a = a * img->sx;
   pos_b = b * img->sy;
-  // fprintf(stderr, "alpha and beta position: %f, %f\n", pos_a, pos_b);
-  if (pos_a >= img->sx) pos_a = img->sx-1;
-  if (pos_b >= img->sy) pos_b = img->sy-1;
 
   // Update image color
-  *(alpha) = *(ip + (pos_b + (pos_a * img->sx)));
+  *(alpha) = *(img_color + (pos_b + (pos_a * img->sx)));
  return;  
 }
 
@@ -790,15 +772,17 @@ void addAreaLight(double sx, double sy, double nx, double ny, double nz,\
   //       to insert a series of point lightsources in this function.
   struct point3D p;
   struct pointLS *l;
-  struct object3D *plane = newPlane(1,1,1,0,r,g,b,1,1,6);
-  plane->isLightSource = 1; // set as light source
-  Scale(plane, sx, sy, sy);
+  struct object3D *plane = newPlane(1,1,1,0,r,g,b,1,1,1);
+  plane->isLightSource = 1; 
 
+  // do the transformations
+  Scale(plane, sx, sy, sy);
+  // rotate plane according to the normal
   double theta = acos(nz / (sqrt(pow(nx, 2) + pow(ny, 2) + pow(nz, 2))));
   double phi = atan(ny / nx);
   RotateZ(plane, theta);
   RotateX(plane, phi);
-
+  // RotateX(plane, PI);
   Translate(plane, tx, ty, tz);
   invert(&plane->T[0][0], &plane->Tinv[0][0]);
   insertObject(plane, o_list);
@@ -808,20 +792,16 @@ void addAreaLight(double sx, double sy, double nx, double ny, double nz,\
   for (int i = 0; i < N; i ++){
     double x, y, z;
     planeSample(plane, &x, &y, &z);
-    // sx += nx * 0.0001;
-    // sy += ny * 0.0001;
-    // sz += nz * 0.0001;
-
-    // struct point3D *p = newPoint(0, 25, -3.5);
+    // adjust the sample point slightly in case that it's on the opposite side of the plane
     p.px = x + (nx * 0.0001);
     p.py = y + (ny * 0.0001);
+    // p.py = y - 0.0000001;
     p.pz = z + (nz * 0.0001);
-    // p = newPoint(x, y, z);
     p.pw = 1.0;
+
     l = newPLS(&p, r/(double)N, g/(double)N, b/(double)N);
     insertPLS(l, l_list);
-    // free(p);
-    // printf("INSERTED NEW LIGHT @ [%f, %f, %f] w/ [%f, %f, %f]\n", p->px, p->py, p->pz, r/N, g/N, b/N);
+    // fprintf(stderr, "sample light at (%f, %f, %f) \n", p.px, p.py, p.pz);
   }
 }
 

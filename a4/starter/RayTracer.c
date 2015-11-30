@@ -22,6 +22,7 @@
 
 #include "utils.h"	// <-- This includes RayTracer.h
 
+#define AASamples 5
 // A couple of global structures and data: An object list, a light list, and the
 // maximum recursion depth
 struct object3D *object_list;
@@ -89,7 +90,7 @@ void buildScene(void)
  //            //     nothing happens! your object won't be rendered.
 
  // // That's it for defining a single sphere... let's add a couple more objects
- // o=newSphere(.05,.95,.95,.75,.75,.95,.55,0,1,6);
+ // o=newSphere(.05,.95,.95,.75,.75,.95,.55,1,1,6);
  // Scale(o,.95,1.65,.65);
  // RotateZ(o,-PI/1.5);
  // Translate(o,-2.2,1.75,1.35);
@@ -103,7 +104,7 @@ void buildScene(void)
  // RotateX(o,PI/2);
  // Translate(o,0,-4,5);
  // invert(&o->T[0][0],&o->Tinv[0][0]);
- // // loadTexture(o,"./texture/blue_flower.ppm", 1, &texture_list);
+ // // loadTexture(o,"./texture/landscape.ppm", 1, &texture_list);
  // insertObject(o,&object_list);
 
 
@@ -120,6 +121,13 @@ void buildScene(void)
                -8, 35.5, -3.5, 8,
                0.95, 0.95, 0.95 ,
                &object_list, &light_list);
+
+   // visible areaLight
+   // addAreaLight(1.5, 1.5, 0, -1, 0,
+   //             0, 8, 5, 10,
+   //             0.95, 0.95, 0.95 ,
+   //             &object_list, &light_list);
+
 
  // End of simple scene for Assignment 3
  // Keep in mind that you can define new types of objects such as cylinders and parametric surfaces,
@@ -251,7 +259,7 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
   {
     // Get object colour from the texture given the texture coordinates (a,b), and the texturing function
     // for the object. Note that we will use textures also for Photon Mapping.
-    // fprintf(stderr, "texture coordinates in rtShade: %f, %f\n", a, b);
+    if (a > 1 || a < 0 || b >1 || b<0) fprintf(stderr, "texture coordinates in rtShade: %f, %f\n", a, b);
     obj->textureMap(obj->texImg,a,b,&R,&G,&B);
   }
 
@@ -720,7 +728,7 @@ int main(int argc, char *argv[])
   fprintf(stderr,"\n");
 
   if (!antialiasing) aa_samples =1;
-  else aa_samples = 5;
+  else aa_samples = AASamples;
   // fprintf(stderr,"num of samples: %d\n",aa_samples);
 
   fprintf(stderr,"Rendering row: ");
@@ -749,13 +757,14 @@ int main(int argc, char *argv[])
         col.G = background.G;
         col.B = background.B;
 
+        // make a sample point around the original p_i,j
         pc.px = cam->wl + (i+drand48()-0.5) * du;
         pc.py = cam->wt + (j+drand48()-0.5) * dv;
         pc.pz = cam->f;
         pc.pw = 1;
         matVecMult(cam->C2W, &pc);
 
-        // set direction d_i,j = p_i,j - e,
+        // set direction d = p_i,j - e
         d.px= pc.px - cam->e.px;
         d.py= pc.py - cam->e.py;
         d.pz= pc.pz - cam->e.pz;
