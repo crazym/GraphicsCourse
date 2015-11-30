@@ -137,7 +137,7 @@ void buildScene(void)
  //        transparency, and the overall visual quality of your result. Put some work into thinking
  //        about these elements when designing your scene.
  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  o=newSphere(.5,.95,.55,.25,.75,.95,.55,1,1,4);
+  o=newSphere(.5,.55,.55,.05,.75,.95,.55,1,1,2);
   Scale(o,.8,0.8,0.8);
   // RotateZ(o,-PI/1.5);
   Translate(o,0,0.55,1.5);
@@ -145,7 +145,7 @@ void buildScene(void)
   loadTexture(o,"./texture/face_1.ppm", 1, &texture_list);
   insertObject(o,&object_list);
 
-  o=newSphere(.5,.55,.55,.05,.75,.95,.55,1,1,2);
+  o=newSphere(.5,.95,.55,.25,.75,.95,.55,1,1,4);
   // Scale(o,0.5,0.5,1);
   Translate(o,0,-1,1.5);
   invert(&o->T[0][0],&o->Tinv[0][0]);
@@ -178,21 +178,32 @@ void buildScene(void)
   // insertObject(o,&object_list);
 
 
+  // o=newSphere(.5,.95,.55,.25,.75,.95,.55,1,1,4);
+  // // Scale(o,1.2,1.2,1.2);
+  // // RotateZ(o,-PI/1.5);
+  // Translate(o, 0, -1, 1);
+  // invert(&o->T[0][0],&o->Tinv[0][0]);
+  // loadTexture(o,"./texture/desert.ppm", 1, &texture_list);
+  // loadTexture(o,"./texture/desert_normal.ppm", 2, &texture_list);
+  // insertObject(o,&object_list);
+
   o=newPlane(.05,.75,.05,.05,.55,.8,.75,1,1,2);
-  Scale(o,20,5,11);
+  Scale(o,8,3,11);
   // RotateZ(o,-PI/1.5);
   RotateX(o,PI/2);
   Translate(o,0,-2,0);
   invert(&o->T[0][0],&o->Tinv[0][0]);
-  loadTexture(o,"./texture/blue_flower.ppm", 1, &texture_list);
+  loadTexture(o,"./texture/stone_normal.ppm", 2, &texture_list);
+  // loadTexture(o,"./texture/blue_flower.ppm", 1, &texture_list);
   insertObject(o,&object_list);
 
-  o=newPlane(.5,.75,.35,.05,0.5,0.5,0.5,1,1,2);
+  o=newPlane(.5,.75,.35,.05,0.4,0.4,0.4,1,1,2);
   Scale(o,40,20,20);
   // RotateZ(o,-PI/1.5);
   Translate(o,0,12,15);
   invert(&o->T[0][0],&o->Tinv[0][0]);
-  loadTexture(o,"./texture/landscape.ppm", 1, &texture_list);
+  loadTexture(o,"./texture/starry_night.ppm", 1, &texture_list);
+  // loadTexture(o,"./texture/stone_normal.ppm", 2, &texture_list);
   insertObject(o,&object_list);
  }
 
@@ -328,6 +339,8 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
     current_ls = current_ls->next;
   }
 
+  free(light_ray);
+  free(current_ls);
   /* Global Component */
   /* depending on ray = p + lambda *(p - e) only, nothing to do with LS(s) */
 
@@ -352,8 +365,8 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
       tmp_col.R += obj->alb.rg * E_spec.R;
       tmp_col.G += obj->alb.rg * E_spec.G;
       tmp_col.B += obj->alb.rg * E_spec.B;
+      free(refl_ray);
     }
-    free(refl_ray);
 
     if (obj->alpha < 1){
       double x,y,z;
@@ -399,8 +412,8 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
         refract_dir.pw = 1;
 
         //cast new ray
-        ray3D *refract_ray = newRay(p, &refract_dir);
-        rayTrace(refract_ray, depth + 1, &E_refr, obj);
+        refr_ray = newRay(p, &refract_dir);
+        rayTrace(refr_ray, depth + 1, &E_refr, obj);
         
         // Update color for refraction
         E_refr.R = E_refr.R * (1 - obj->alpha);
@@ -408,7 +421,7 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
         E_refr.B = E_refr.B * (1 - obj->alpha);
 
         // Free refraction ray
-        free(refract_ray);
+        free(refr_ray);
       }
     }
   }
@@ -422,8 +435,6 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
   col->G = min(tmp_col.G * G, 1);
   col->B = min(tmp_col.B * B, 1);
 
-  free(light_ray);
-  free(current_ls);
  return;
 }
 
@@ -460,7 +471,17 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
       if ((*lambda < 0 || temp_lambda < *lambda) && (temp_lambda > 0)) {
         *lambda = temp_lambda;
         *p = temp_p;
-        *n = temp_n;
+
+        // use coordinated normal map as normal = (2*color)-1
+        if (current_obj->normalMap) {
+          // struct colourRGB normal_color;
+          double norm_x, norm_y, norm_z;
+          current_obj->textureMap(current_obj->normalMap, coor_a, coor_b, &norm_x, &norm_y, &norm_z);
+          n->px = temp_n.px - (norm_x * 2 - 1);
+          n->py = temp_n.py - (norm_y * 2 - 1);
+          n->pz = temp_n.pz - (norm_z * 2 - 1);
+        } else *n = temp_n;
+
         *obj = current_obj;
 
         // fprintf(stderr, "texture coordinates in findFirstHit: %f, %f\n", coor_a, coor_b);
@@ -490,7 +511,7 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
  
   double lambda;		// Lambda at intersection
   double a,b;		// Texture coordinates
-  struct object3D *obj;	// Pointer to object at intersection
+  struct object3D *obj = NULL;	// Pointer to object at intersection
   struct point3D p;	// Intersection point
   struct point3D n;	// Normal at intersection
   struct colourRGB I;	// Colour returned by shading function

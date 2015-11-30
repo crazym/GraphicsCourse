@@ -291,19 +291,26 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
   // fprintf(stderr, "plane intersection\n");
   struct ray3D ray_transformed;
   // normal for canonical plan pointing upwards
-  struct point3D *n_orig = newPoint(0, 0, 1);
+  // struct point3D *n_orig = newPoint(0, 0, 1);
+  struct point3D n_orig;
+  n_orig.px = 0;
+  n_orig.py = 0;
+  n_orig.pz = 1;
+  n_orig.pw = 1;
+
   // holder for a known point on plane, stores p - a later 
-  struct point3D *known_point = newPoint(0, 0, 0);
+  // struct point3D *known_point = newPoint(0, 0, 0);
 
   // memcpy(ray_transformed, ray, sizeof(struct ray3D));
 
   rayTransform(ray, &ray_transformed, plane);
-  double dot_d_n = dot(&ray_transformed.d, n_orig);
+  double dot_d_n = dot(&ray_transformed.d, &n_orig);
   if (dot_d_n == 0) {
     *lambda = -1;
   } else {
-    subVectors(&ray_transformed.p0, known_point);
-    double canon_lambda = dot(known_point, n_orig) / dot_d_n;
+    // subVectors(&ray_transformed.p0, known_point);
+    // dot(known_point, n_orig) = -ray_transformed.p0.pz
+    double canon_lambda = -ray_transformed.p0.pz / dot_d_n;
 
     if (canon_lambda != 0) {  
       // compute intersection p
@@ -319,7 +326,7 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
         *b = (p->py + 1) / 2;
         // assign the rayPosition and transform normal n
         ray->rayPos(ray, *lambda, p);
-        normalTransform(n_orig, n, plane);
+        normalTransform(&n_orig, n, plane);
       } else {
         *lambda = -1;
         return;
@@ -327,8 +334,8 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
     }
     normalize(n);
   }
-  free(n_orig);
-  free(known_point);
+  // free(n_orig);
+  // free(known_point);
 }
 
 void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda, struct point3D *p, struct point3D *n, double *a, double *b)
@@ -349,18 +356,18 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
   struct ray3D ray_transformed;
 
   // unit sphere centered at origin
-  struct point3D *center_orig = newPoint(0, 0, 0);
-  struct point3D *sub_a_c;
+  // struct point3D *center_orig = newPoint(0, 0, 0);
+  // struct point3D *sub_a_c;
   double A, B, C, D;
 
   rayTransform(ray, &ray_transformed, sphere);
 
-  sub_a_c = &ray_transformed.p0;
-  subVectors(center_orig, sub_a_c);
+  // sub_a_c = &ray_transformed.p0;
+  // subVectors(center_orig, sub_a_c);
 
   A = dot(&ray_transformed.d, &ray_transformed.d);
-  B = dot(sub_a_c, &ray_transformed.d);
-  C = dot(sub_a_c, sub_a_c) - 1.0;
+  B = dot(&ray_transformed.p0, &ray_transformed.d);
+  C = dot(&ray_transformed.p0, &ray_transformed.p0) - 1.0;
   D = B*B - A*C;
 
   if (D < 0) {
@@ -401,7 +408,8 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
   *a = asin(n->px) / PI + 0.5;
   *b = asin(n->py) / PI + 0.5;
 
-  free(center_orig);
+  // free(center_orig);
+  // free(sub_a_c);
 }
 
 void cylIntersect(struct object3D *cylinder, struct ray3D *r, double *lambda, struct point3D *p, struct point3D *n, double *a, double *b)
