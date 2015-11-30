@@ -66,76 +66,46 @@ void buildScene(void)
 
  // Note the parameters: ra, rd, rs, rg, R, G, B, alpha, r_index, and shinyness)
 
- // o=newSphere(.05,.95,.35,.35,1,.25,.25,1,1,6);		// Initialize a sphere
- // // Scale(o,1.5,.75,.75);					// Apply a few transforms (Translate * Rotate * Scale)
- // // RotateZ(o,PI/4);					
- // Translate(o,2.0,2.5,3.5);
- // invert(&o->T[0][0],&o->Tinv[0][0]);			// Compute the inverse transform * DON'T FORGET TO DO THIS! *
- // // If needed, this is how you load a texture map
- // // loadTexture(o,"./Texture/mosaic2.ppm",1,&texture_list);	// This loads a texture called 'mosaic2.ppm'. The
-	// 							// texture gets added to the texture list, and a
-	// 							// pointer to it is stored within this object in the
-	// 							// corresponding place. The '1' indicates this image
-	// 							// will be used as a texture map. Use '2' to load
-	// 							// an image as a normal map, and '3' to load an
-	// 							// alpha map. Texture and normal maps are RGB .ppm
-	// 							// files, alpha maps are grayscale .pgm files.
-	// 							// * DO NOT * try to free image data loaded in this
-	// 							// way, the cleanup function already provided will do
-	// 							// this at the end.
- //  loadTexture(o,"./texture/decorative_pattern.ppm", 1, &texture_list);
+ o=newSphere(.05,.95,.35,.35,1,.25,.25,1,1,6);    // Initialize a sphere
+ Scale(o,1.5,.75,.75);          // Apply a few transforms (Translate * Rotate * Scale)
+ RotateZ(o,PI/4);         
+ Translate(o,2.0,2.5,1.5);
+ invert(&o->T[0][0],&o->Tinv[0][0]);      // Compute the inverse transform * DON'T FORGET TO DO THIS! *
 
- //  insertObject(o,&object_list);			// <-- If you don't insert the object into the object list,
-	// 					//     nothing happens! your object won't be rendered.
+ // If needed, this is how you load a texture map
+ // loadTexture(o,"./Texture/mosaic2.ppm",1,&texture_list); // This loads a texture called 'mosaic2.ppm'. The
+                // texture gets added to the texture list, and a
+                // pointer to it is stored within this object in the
+                // corresponding place. The '1' indicates this image
+                // will be used as a texture map. Use '2' to load
+                // an image as a normal map, and '3' to load an
+                // alpha map. Texture and normal maps are RGB .ppm
+                // files, alpha maps are grayscale .pgm files.
+                // * DO NOT * try to free image data loaded in this
+                // way, the cleanup function already provided will do
+                // this at the end.
+  // loadTexture(o,"./texture/decorative_pattern.ppm", 1, &texture_list);
+  insertObject(o,&object_list);     // <-- If you don't insert the object into the object list,
+            //     nothing happens! your object won't be rendered.
 
  // That's it for defining a single sphere... let's add a couple more objects
- o=newSphere(.5,.95,.55,.25,.75,.95,.55,1,1,4);
- Scale(o,.8,0.8,0.8);
- // RotateZ(o,-PI/1.5);
- Translate(o,0,0.55,1.5);
+ o=newSphere(.05,.95,.95,.75,.75,.95,.55,0,1,6);
+ Scale(o,.95,1.65,.65);
+ RotateZ(o,-PI/1.5);
+ Translate(o,-2.2,1.75,1.35);
  invert(&o->T[0][0],&o->Tinv[0][0]);
- loadTexture(o,"./texture/decorative_pattern.ppm", 1, &texture_list);
+ // loadTexture(o,"./texture/decorative_pattern.ppm", 1, &texture_list);
  insertObject(o,&object_list);
 
- o=newSphere(.5,.55,.55,.05,.75,.95,.55,1,1,2);
- // Scale(o,0.5,0.5,1);
- // RotateZ(o,-PI/1.5);
- Translate(o,0,-1,1.5);
- invert(&o->T[0][0],&o->Tinv[0][0]);
- loadTexture(o,"./texture/decorative_pattern.ppm", 1, &texture_list);
- insertObject(o,&object_list);
-
- o=newSphere(.5,.55,.55,.05,0,0,0,1,1,2);
- Scale(o,0.1,0.1,0.1);
- // RotateZ(o,-PI/1.5);
- Translate(o,-0.2,0.4,0.4);
- invert(&o->T[0][0],&o->Tinv[0][0]);
- insertObject(o,&object_list);
-
- 
- o=newSphere(.5,.55,.55,.05,0,0,0,1,1,2);
- Scale(o,0.1,0.1,0.1);
- // RotateZ(o,-PI/1.5);
- Translate(o,0.3,0.4,0.4);
- invert(&o->T[0][0],&o->Tinv[0][0]);
- insertObject(o,&object_list);
-
- o=newPlane(.05,.75,.05,.05,.55,.8,.75,1,1,2);
- Scale(o,20,5,11);
- // RotateZ(o,-PI/1.5);
+ o=newPlane(.05,.75,.65,.55,.55,.8,.75,1,1,2);
+ Scale(o,11,11,11);
+ RotateZ(o,PI/4);
  RotateX(o,PI/2);
- Translate(o,0,-2,0);
+ Translate(o,0,-4,5);
  invert(&o->T[0][0],&o->Tinv[0][0]);
- loadTexture(o,"./texture/blue_flower.ppm", 1, &texture_list);
+ // loadTexture(o,"./texture/blue_flower.ppm", 1, &texture_list);
  insertObject(o,&object_list);
 
- o=newPlane(.5,.75,.35,.05,0.5,0.5,0.5,1,1,2);
- Scale(o,40,20,20);
- // RotateZ(o,-PI/1.5);
- Translate(o,0,12,15);
- invert(&o->T[0][0],&o->Tinv[0][0]);
- loadTexture(o,"./texture/landscape.ppm", 1, &texture_list);
- insertObject(o,&object_list);
 
  // Insert a single point light source. We set up its position as a point structure, and specify its
  // colour in terms of RGB (in [0,1]).
@@ -167,7 +137,53 @@ void buildScene(void)
  //        transparency, and the overall visual quality of your result. Put some work into thinking
  //        about these elements when designing your scene.
  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-   // free(o);
+  // o=newSphere(.5,.95,.55,.25,.75,.95,.55,1,1,4);
+  // Scale(o,.8,0.8,0.8);
+  // // RotateZ(o,-PI/1.5);
+  // Translate(o,0,0.55,1.5);
+  // invert(&o->T[0][0],&o->Tinv[0][0]);
+  // loadTexture(o,"./texture/decorative_pattern.ppm", 1, &texture_list);
+  // insertObject(o,&object_list);
+
+  // o=newSphere(.5,.55,.55,.05,.75,.95,.55,1,1,2);
+  // // Scale(o,0.5,0.5,1);
+  // // RotateZ(o,-PI/1.5);
+  // Translate(o,0,-1,1.5);
+  // invert(&o->T[0][0],&o->Tinv[0][0]);
+  // loadTexture(o,"./texture/decorative_pattern.ppm", 1, &texture_list);
+  // insertObject(o,&object_list);
+
+  // o=newSphere(.5,.55,.55,.05,0,0,0,1,1,2);
+  // Scale(o,0.1,0.1,0.1);
+  // // RotateZ(o,-PI/1.5);
+  // Translate(o,-0.2,0.4,0.4);
+  // invert(&o->T[0][0],&o->Tinv[0][0]);
+  // insertObject(o,&object_list);
+
+
+  // o=newSphere(.5,.55,.55,.05,0,0,0,1,1,2);
+  // Scale(o,0.1,0.1,0.1);
+  // // RotateZ(o,-PI/1.5);
+  // Translate(o,0.3,0.4,0.4);
+  // invert(&o->T[0][0],&o->Tinv[0][0]);
+  // insertObject(o,&object_list);
+
+  // o=newPlane(.05,.75,.05,.05,.55,.8,.75,1,1,2);
+  // Scale(o,20,5,11);
+  // // RotateZ(o,-PI/1.5);
+  // RotateX(o,PI/2);
+  // Translate(o,0,-2,0);
+  // invert(&o->T[0][0],&o->Tinv[0][0]);
+  // loadTexture(o,"./texture/blue_flower.ppm", 1, &texture_list);
+  // insertObject(o,&object_list);
+
+  // o=newPlane(.5,.75,.35,.05,0.5,0.5,0.5,1,1,2);
+  // Scale(o,40,20,20);
+  // // RotateZ(o,-PI/1.5);
+  // Translate(o,0,12,15);
+  // invert(&o->T[0][0],&o->Tinv[0][0]);
+  // loadTexture(o,"./texture/landscape.ppm", 1, &texture_list);
+  // insertObject(o,&object_list);
  }
 
 void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct ray3D *ray, int depth, double a, double b, struct colourRGB *col)
@@ -224,12 +240,18 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
   struct point3D temp_p, temp_n;
 
   // used in Phong model and Global reflector
-  struct ray3D *ref_ray;
+  struct ray3D *refl_ray;
+  struct ray3D *refr_ray;
   double temp_dot_value, temp_max;
   point3D m;                 
   point3D c;               
   point3D ms;    
   struct colourRGB E_spec;
+  /* Used in refraction */
+  struct colourRGB E_refr;
+  E_refr.R = 0;
+  E_refr.G = 0;
+  E_refr.B = 0;
 
   while (current_ls) {
     memcpy(&light_dir, &current_ls->p0, sizeof(struct point3D));
@@ -293,35 +315,97 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
       tmp_col.G += obj->alb.rs * current_ls->col.G * temp_max;
       tmp_col.B += obj->alb.rs * current_ls->col.B * temp_max;
     }
-
-    /* Global Component */
-
-    if (depth < MAX_DEPTH){
-      // compute mirror direction: ms = - 2 * dot(d, n) * n + d
-      double temp_dot_value = dot(&ray->d, n);
-      ms.px = - 2 * temp_dot_value * n->px;
-      ms.py = - 2 * temp_dot_value * n->py;
-      ms.pz = - 2 * temp_dot_value * n->pz;
-      ms.pw = 1;
-      // construct new mirror direction
-      // memcpy(&m, &ray->d, sizeof(struct point3D));
-      addVectors(&ray->d, &ms);
-      normalize(&ms);
-
-      // If OBJ has specular reflection
-      if (obj->alb.rs != 0){
-        // create the ray from intersection point p along mirror direction 
-        ref_ray = newRay(p, &ms);
-        rayTrace(ref_ray, depth++, &E_spec, obj);
-        // add reflected color E_spec in, scaled by rg
-        tmp_col.R += obj->alb.rg * E_spec.R;
-        tmp_col.G += obj->alb.rg * E_spec.G;
-        tmp_col.B += obj->alb.rg * E_spec.B;
-      }
-      free(ref_ray);
-    }
     current_ls = current_ls->next;
- }
+  }
+
+  /* Global Component */
+  /* depending on ray = p + lambda *(p - e) only, nothing to do with LS(s) */
+
+  if (depth < MAX_DEPTH){
+    // compute mirror direction: ms = - 2 * dot(d, n) * n + d
+    double temp_dot_value = dot(&ray->d, n);
+    ms.px = - 2 * temp_dot_value * n->px;
+    ms.py = - 2 * temp_dot_value * n->py;
+    ms.pz = - 2 * temp_dot_value * n->pz;
+    ms.pw = 1;
+    // construct new mirror direction
+    // memcpy(&m, &ray->d, sizeof(struct point3D));
+    addVectors(&ray->d, &ms);
+    normalize(&ms);
+
+    // If OBJ has specular reflection
+    if (obj->alb.rs != 0){
+      // create the ray from intersection point p along mirror direction 
+      refl_ray = newRay(p, &ms);
+      rayTrace(refl_ray, depth++, &E_spec, obj);
+      // add reflected color E_spec in, scaled by rg
+      tmp_col.R += obj->alb.rg * E_spec.R;
+      tmp_col.G += obj->alb.rg * E_spec.G;
+      tmp_col.B += obj->alb.rg * E_spec.B;
+    }
+    free(refl_ray);
+
+    if (obj->alpha < 1){
+      double x,y,z;
+      double index;
+      double m, m2;
+      point3D refract_dir;
+      
+      // Determine ray enter or exit object
+      if ( dot(n, &ray->d) > 0){
+        index =  obj->r_index;
+        temp_dot_value = dot(n, &ray->d);
+      } else{
+        index = 1/obj->r_index;
+        // Set normal to opposite direction
+        point3D opp_n;
+        opp_n.px = -n->px;
+        opp_n.py = -n->py;
+        opp_n.pz = -n->pz;
+        opp_n.pw = 1;
+        temp_dot_value = dot(&opp_n, &ray->d);
+      }
+      m = 1 - pow(index, 2) * (1 - pow(temp_dot_value, 2));
+      // Do refraction only when m >= 0
+      if (m >= 0) {
+        m2 = index * temp_dot_value - pow(m,0.5);
+        // Calculate the direction
+        if (dot(n, &ray->d) > 0){
+          // Ray from outside of object to inside of object
+          x = index * ray->d.px + m2 * n->px;
+          y = index * ray->d.py + m2 * n->py;
+          z = index * ray->d.pz + m2 * n->pz;
+        }
+        else{
+          // Ray from inside of object to outside of object
+          x = index * ray->d.px + m2 * n->px;// * -1;
+          y = index * ray->d.py + m2 * n->py;// * -1;
+          z = index * ray->d.pz + m2 * n->pz;// * -1;
+        }
+        // Refraction Direction
+        refract_dir.px = x;
+        refract_dir.py = y;
+        refract_dir.pz = z;
+        refract_dir.pw = 1;
+
+        //cast new ray
+        ray3D *refract_ray = newRay(p, &refract_dir);
+        rayTrace(refract_ray, depth + 1, &E_refr, obj);
+        
+        // Update color for refraction
+        E_refr.R = E_refr.R * (1 - obj->alpha);
+        E_refr.G = E_refr.G * (1 - obj->alpha);
+        E_refr.B = E_refr.B * (1 - obj->alpha);
+
+        // Free refraction ray
+        free(refract_ray);
+      }
+    }
+  }
+
+  tmp_col.R = tmp_col.R * obj->alpha + E_refr.R;
+  tmp_col.G = tmp_col.G * obj->alpha + E_refr.G;
+  tmp_col.B = tmp_col.B * obj->alpha + E_refr.B;
 
  // Be sure to update 'col' with the final colour computed here!
   col->R = min(tmp_col.R * R, 1);
