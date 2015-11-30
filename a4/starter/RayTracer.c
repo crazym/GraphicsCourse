@@ -137,14 +137,18 @@ void buildScene(void)
  //        transparency, and the overall visual quality of your result. Put some work into thinking
  //        about these elements when designing your scene.
  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  // snowman head
   o=newSphere(.5,.55,.55,.05,.75,.95,.55,1,1,2);
   Scale(o,.8,0.8,0.8);
   // RotateZ(o,-PI/1.5);
   Translate(o,0,0.55,1.5);
   invert(&o->T[0][0],&o->Tinv[0][0]);
   loadTexture(o,"./texture/face_1.ppm", 1, &texture_list);
+  loadTexture(o,"./texture/face_normal.ppm", 2, &texture_list);
   insertObject(o,&object_list);
 
+  // snowman body
   o=newSphere(.5,.95,.55,.25,.75,.95,.55,1,1,4);
   // Scale(o,0.5,0.5,1);
   Translate(o,0,-1,1.5);
@@ -153,35 +157,41 @@ void buildScene(void)
   RotateX(o,-PI/0.5);
   insertObject(o,&object_list);
 
-  /* eyes */
-  // o=newSphere(.5,.55,.55,.05,0,0,0,1,1,2);
-  // Scale(o,0.1,0.1,0.1);
-  // // RotateZ(o,-PI/1.5);
-  // Translate(o,-0.2,0.4,0.4);
-  // invert(&o->T[0][0],&o->Tinv[0][0]);
-  // insertObject(o,&object_list);
+  // transparent
+  o=newSphere(.05,.75,.75,.15,.68,.92,0.92,0.3,1.5,3);
+  Scale(o,2.5,2.5,1);
+  Translate(o,0 ,1.5,3.8);
+  invert(&o->T[0][0],&o->Tinv[0][0]);
+  insertObject(o,&object_list);
 
+  // alpha mapping
+  o=newSphere(.5,.95,.75,.8,.9,.91,.98,1,1,6);
+  Scale(o,1.4,1.4,0.5);
+  Translate(o,4,-0.5,2);
+  invert(&o->T[0][0],&o->Tinv[0][0]);
+  loadTexture(o,"./texture/alpha01.pgm", 3, &texture_list);
+  insertObject(o,&object_list);
 
-  // o=newSphere(.5,.55,.55,.05,0,0,0,1,1,2);
-  // Scale(o,0.1,0.1,0.1);
-  // // RotateZ(o,-PI/1.5);
-  // Translate(o,0.3,0.4,0.4);
-  // invert(&o->T[0][0],&o->Tinv[0][0]);
-  // insertObject(o,&object_list);
+  // background snowman
+  o=newSphere(.5,.55,.55,.05,.75,.95,.55,1,1,2);
+  Scale(o,1.3,1.3,0.8);
+  // RotateZ(o,-PI/1.5);
+  Translate(o,-8,1.4,5.5);
+  invert(&o->T[0][0],&o->Tinv[0][0]);
+  loadTexture(o,"./texture/blue_flower.ppm", 1, &texture_list);
+  insertObject(o,&object_list);
 
-  // transparent 
-  // o=newSphere(.5,.95,.55,.25,.75,.95,.55,0.2,1,4);
-  // Scale(o,1.2,1.2,1.2);
-  // // RotateZ(o,-PI/1.5);
-  // Translate(o,0,0,0.2);
-  // invert(&o->T[0][0],&o->Tinv[0][0]);
-  // insertObject(o,&object_list);
+  o=newSphere(.5,.95,.55,.25,.75,.95,.55,1,1,4);
+  loadTexture(o,"./texture/decorative_pattern.ppm", 1, &texture_list);
+  Scale(o,2,2,1);
+  Translate(o,-8,-1.2,5.5);
+  invert(&o->T[0][0],&o->Tinv[0][0]);
+  RotateX(o,-PI/0.5);
+  insertObject(o,&object_list);
 
-
-  // o=newSphere(.5,.95,.55,.25,.75,.95,.55,1,1,4);
-  // // Scale(o,1.2,1.2,1.2);
-  // // RotateZ(o,-PI/1.5);
-  // Translate(o, 0, -1, 1);
+  // o=newSphere(.05,.55,.55,.95,.2,.2,.2,1,1,2);
+  // Scale(o,1,1,0.1);
+  // Translate(o,-3.5,-1,1.1);
   // invert(&o->T[0][0],&o->Tinv[0][0]);
   // loadTexture(o,"./texture/desert.ppm", 1, &texture_list);
   // loadTexture(o,"./texture/desert_normal.ppm", 2, &texture_list);
@@ -344,6 +354,11 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
   /* Global Component */
   /* depending on ray = p + lambda *(p - e) only, nothing to do with LS(s) */
 
+  double alpha;
+  if (obj->alphaMap) alphaMap(obj->alphaMap, a, b, &alpha);
+  else alpha = obj->alpha;
+  // if (alpha < 1) fprintf(stderr, "alpha at %G, %G is %G\n", a, b, alpha);
+
   if (depth < MAX_DEPTH){
     // compute mirror direction: ms = - 2 * dot(d, n) * n + d
     double temp_dot_value = dot(&ray->d, n);
@@ -368,12 +383,19 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
       free(refl_ray);
     }
 
-    if (obj->alpha < 1){
+    // if (obj->alphaMap) {
+    //   double alpha;
+    //   alphaMap(obj->alphaMap, a, b, &alpha);
+    //   fprintf(stderr, "alpha at %G, %G is %G\n", a, b, alpha);
+    // }
+      
+
+    if (alpha < 1){
       double x,y,z;
       double index;
       double m, m2;
       point3D refract_dir;
-      
+
       // Determine ray enter or exit object
       if ( dot(n, &ray->d) > 0){
         index =  obj->r_index;
@@ -416,9 +438,9 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
         rayTrace(refr_ray, depth + 1, &E_refr, obj);
         
         // Update color for refraction
-        E_refr.R = E_refr.R * (1 - obj->alpha);
-        E_refr.G = E_refr.G * (1 - obj->alpha);
-        E_refr.B = E_refr.B * (1 - obj->alpha);
+        E_refr.R = E_refr.R * (1 - alpha);
+        E_refr.G = E_refr.G * (1 - alpha);
+        E_refr.B = E_refr.B * (1 - alpha);
 
         // Free refraction ray
         free(refr_ray);
@@ -426,9 +448,15 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
     }
   }
 
-  tmp_col.R = tmp_col.R * obj->alpha + E_refr.R;
-  tmp_col.G = tmp_col.G * obj->alpha + E_refr.G;
-  tmp_col.B = tmp_col.B * obj->alpha + E_refr.B;
+  // if (obj->alphaMap) {
+  //   double alpha;
+  //   alphaMap(obj->alphaMap, a, b, &alpha);
+  //   fprintf(stderr, "alpha at %G, %G is %G\n", a, b, alpha);
+  // }
+
+  tmp_col.R = tmp_col.R * alpha + E_refr.R;
+  tmp_col.G = tmp_col.G * alpha + E_refr.G;
+  tmp_col.B = tmp_col.B * alpha + E_refr.B;
 
  // Be sure to update 'col' with the final colour computed here!
   col->R = min(tmp_col.R * R, 1);

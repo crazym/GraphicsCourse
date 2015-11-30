@@ -718,8 +718,26 @@ void alphaMap(struct image *img, double a, double b, double *alpha)
  // interpolation to obtain the texture colour.
  //////////////////////////////////////////////////
  
- *(alpha)=1;  // Returns 1 which means fully opaque. Replace
- return;  // with your code if implementing alpha maps.
+ // *(alpha)=1;  // Returns 1 which means fully opaque. Replace
+// with your code if implementing alpha maps.
+  if (a<0) a=0;
+  if (b<0) b=0;
+  if (a>1) a=1;
+  if (b>1) b=1;
+
+  int pos_a, pos_b;         // Coordinates for pixel
+  double *ip=(double *)img->rgbdata;      // Pointer to image color
+
+  // Make sure position is within boundary
+  pos_a = a * img->sx;
+  pos_b = b * img->sy;
+  // fprintf(stderr, "alpha and beta position: %f, %f\n", pos_a, pos_b);
+  if (pos_a >= img->sx) pos_a = img->sx-1;
+  if (pos_b >= img->sy) pos_b = img->sy-1;
+
+  // Update image color
+  *(alpha) = *(ip + (pos_b + (pos_a * img->sx)));
+ return;  
 }
 
 
