@@ -43,26 +43,29 @@ B. PLACE AN (X) IN FRONT OF PORTIONS OF THE ASSIGNMENT THAT YOU COMPLETED IN FUL
    WE WILL BE ABLE TO MAKE AN ACCURATE ASSESSMENT
 
 				                          Completed   Partial   Not done   Mark
-[10 marks]  Ray Casting               X
 
-[10 marks]  Intersection              X
-	    for square
+(a) [10 marks] Antialiasing          X
 
-[10 marks]  Intersection              X
-            for spheres
+(b) [10 marks] Texture mapping       X
 
-[10 marks]  Intersection
-	    for cylinders                              X
-	    
-[15 marks]  Normal transforms         X
+(c) [20 marks] Area light sources    X
 
-[15 marks]  Local Phong               X
- 
-[10 marks]  Shadows                   X
+(d) [20 marks] Implement a cool scene X 
 
-[15 marks]  Global reflection         X
+(e) [5 marks] Completed CHECKLIST     X
 
-[5 marks]   Report                    X 
+(e) [up to 150 marks] Advanced techniques 
+
+[5 marks] Multi-threading             X
+
+[15 marks] CSG or hierarchical objects                      X
+[25 marks] Refraction                 X
+[15 marks] Normal mapping             X
+[15 marks] Alpha mapping              X 
+[35 marks] Depth-of-field                       
+[45 marks] Photon mapping                                   X
+[15 marks] Dispersion                                       X
+[45 marks] Scene octree                                     X
 
 [TA assigned]  Penalty marks
 
