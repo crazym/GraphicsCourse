@@ -504,7 +504,6 @@ void cylIntersect(struct object3D *cylinder, struct ray3D *r, double *lambda, st
 /////////////////////////////////////////////////////////////////
 // Surface coordinates & random sampling on object surfaces 
 /////////////////////////////////////////////////////////////////
-/* hmm, Asst4?? */
 void planeCoordinates(struct object3D *plane, double a, double b, double *x, double *y, double *z)
 {
  // Return in (x,y,z) the coordinates of a point on the plane given by the 2 parameters a,b in [0,1].
@@ -679,24 +678,6 @@ void texMap(struct image *img, double a, double b, double *R, double *G, double 
  // interpolation to obtain the texture colour.
  //////////////////////////////////////////////////
 
- // *(R)=0;  // Returns black - delete this and
- // *(G)=0;  // replace with your code to compute
- // *(B)=0;  // texture colour at (a,b)
- // return;
-
-  // int pos_a, pos_b;
-  // double *img_color=(double *)img->rgbdata;
-
-  // pos_a = a * img->sx;
-  // pos_b = b * img->sy;
-  // // if (pos_a!= 0.0 || pos_b!=0.0) fprintf(stderr, "alpha and beta position: %G, %G\n", pos_a, pos_b);
-
-  // // Update image color
-  // *R = *(img_color + ((pos_a + (pos_b * img->sx)) * 3) + 0);
-  // *G = *(img_color + ((pos_a + (pos_b * img->sx)) * 3) + 1);
-  // *B = *(img_color + ((pos_a + (pos_b * img->sx)) * 3) + 2);
-
-  // used bilinear interpolation:
   // reference: https://en.wikipedia.org/wiki/Bilinear_interpolation
   int dim_max = (img->sx * img->sy * 3) -1;
   double *img_color=(double *)img->rgbdata;
