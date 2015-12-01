@@ -7,7 +7,18 @@ Write your report below.
 __________________________________________________________________________________
 
 - Process:
-    I started with texture mapping and it didn't take too long to implement after I figured how to update the (a, b) coordinates of the objects; then I choosed to do area light which was more straight forward and tested it on the original scene built in a3; after 
+    I started with texture mapping, it didn't take too long to implement after I figured how to update the (a, b) coordinates of the objects; then I choosed to do area light which was tricky to translate the plane coorectly given the center position and normal, and tested it on the original scene built in a3; after that I decided to implement my own scene, and had a bit trouble with figureing out why canonical sphere were deformed after translating it to other position along the center position, and made it by scaling the object slightly. 
+    
+    After adding a few more objects the program was getting slow, so I researched about multi-threading but with no luck; in the end I made it by pragma after receiving the flag -fopenmp email from paco.
+
+    It's not until that I implemented anti-alising that things were getting tough, as I then kept getting Segmentation Fault on any images larger than 300*300. I went through all the code and tried to free all pointers after using them, but of little help, then I tried to removed the pointers and instead use plain struct to for those temporary variables, which helped mitigating the problem, but still failed on images larger than 800*800.
+
+    Putting that aside, I did normal and alpha mapping with ease as texture mapping has been done; refraction did took a while as I forogt to differentiate the formula between the entering and exiting conditions.
+
+    After these have been done, I tested on Mathlab machines and suprisingly found 1024*1024 images works! Not sure if my 32-bit laptop should take the blame...
+
+    I implemented the Depth-of-Field after the assignemnt got extended, the tutorials online helped pretty much since our notes didn't have enough details. However, after adding another nested loop the algorithm no longer worked on large images again... I run out of time after implementing this so I didn't figure out the reason yet, should have checked the memory leak earlier...
+
 
 - Code Description
 
@@ -32,7 +43,7 @@ ________________________________________________________________________________
 
 
 - Existing problems:
-    
+    Seg Fault on rendering large images, the rest should be good.
     
 - What to study:
-Segmentation Fault... on my 32-bit laptop...
+Memory Allocation...

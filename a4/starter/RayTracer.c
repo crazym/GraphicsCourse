@@ -25,7 +25,7 @@
 #define AASamples 5
 #define dof_samples        3
 // larger aperture_size, wider range of depth of fields
-#define aperture_size   4
+#define aperture_size   3
 #define focal_length     2.5
 
 // A couple of global structures and data: An object list, a light list, and the
