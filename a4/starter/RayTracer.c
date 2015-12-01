@@ -23,6 +23,11 @@
 #include "utils.h"	// <-- This includes RayTracer.h
 
 #define AASamples 5
+#define dof_samples        3
+// larger aperture_size, wider range of depth of fields
+#define aperture_size   6
+#define focal_length     1.5
+
 // A couple of global structures and data: An object list, a light list, and the
 // maximum recursion depth
 struct object3D *object_list;
@@ -605,6 +610,14 @@ int main(int argc, char *argv[])
   int k;
   struct colourRGB aa_color_sum; // sum of colors at all sample locations
 
+  // Variables for depth of field
+  double dof_x, dof_y;
+  struct point3D focal_hit;
+  double dof_scale;
+  struct point3D sample_cam;
+  struct point3D newDir;
+
+
   if (argc<5)
   {
     fprintf(stderr,"RayTracer: Can not parse input parameters\n");
@@ -769,25 +782,67 @@ int main(int argc, char *argv[])
         d.pw= pc.pw - cam->e.pw;
         normalize(&d);
 
-        // create a ray from camera to that point and trace
-        ray = newRay(&pc, &d); 
-        rayTrace(ray, 0, &col, NULL); 
+          // // create a ray from camera to that point and trace
+          // ray = newRay(&pc, &d); 
+          // rayTrace(ray, 0, &col, NULL); 
+
+        /* depth of field:
+           Given an aperture size and a focal plain:
+           Shoot an ray through the sampled point on the image plain, pc, 
+           to the focal plain intersecting the focal plain at point focal_hit. 
+           Then randomly sample the aperture disk around the camera and 
+           shot a ray from the sampled point to the focal_hit point. 
+           These rays were then averaged to produce the color for the original 
+           spot on the image plain image_point. 
+           https://wwwx.cs.unc.edu/~sjguy/ImgSynth/ass2/main.html
+        */
+        for (int n=0; n < dof_samples; n++){
+
+          // New point to shoot ray
+          // http://cg.skeelogy.com/depth-of-field-using-raytracing/
+          // P = e + (x1 / (x0/x0+f)) * normalized(d)
+          // where x1 is the distance from the eye to the pixel and x0 is eye to image plane (=1)
+          focal_hit.px = pc.px + focal_length * d.px;
+          focal_hit.py = pc.py + focal_length * d.py;
+          focal_hit.pz = pc.pz + focal_length * d.pz;
+          focal_hit.pw = 1; 
+
+          // New camera postion after random moving camera
+          sample_cam.px = pc.px + (drand48() - 0.5) * aperture_size * du;
+          sample_cam.py = pc.py + (drand48() - 0.5) * aperture_size * dv;
+          sample_cam.pz = pc.pz;
+          sample_cam.pw = 1;
+
+          // New direction for ray
+          // newDir.px = focal_hit.px - cam->e.px;
+          // newDir.py = focal_hit.py - cam->e.py;
+          // newDir.pz = focal_hit.pz - cam->e.pz;
+          // newDir.pw = 1;
+          newDir.px = focal_hit.px - sample_cam.px;
+          newDir.py = focal_hit.py - sample_cam.py;
+          newDir.pz = focal_hit.pz - sample_cam.pz;
+          newDir.pw = 1;
+
+          normalize(&newDir);
+          // create a ray and trace
+          ray = newRay(&sample_cam, &newDir); 
+          rayTrace(ray, 0, &col, NULL);           
+          aa_color_sum.R += col.R;
+          aa_color_sum.G += col.G;
+          aa_color_sum.B += col.B;
         
-        aa_color_sum.R += col.R;
-        aa_color_sum.G += col.G;
-        aa_color_sum.B += col.B;
-      
-        /* Free memory */
-        free(ray);
+          /* Free memory */
+          free(ray);
+        }
       }
       // fprintf(stderr,"num of samples: %d\n",aa_samples);
       // fprintf(stderr,"retrieved color: %G v.s. added: %G\n", col.G, aa_color_sum.G / aa_samples);
 
       // set color of this pixel stored in the array with correct offset
       offset = (i + (j * sx)) * 3;
-      *(rgbIm + (offset + 0)) = (aa_color_sum.R / aa_samples) * 255;
-      *(rgbIm + (offset + 1)) = (aa_color_sum.G / aa_samples) * 255;
-      *(rgbIm + (offset + 2)) = (aa_color_sum.B / aa_samples) * 255;
+      *(rgbIm + (offset + 0)) = ((aa_color_sum.R / aa_samples) / dof_samples) * 255;
+      *(rgbIm + (offset + 1)) = ((aa_color_sum.G / aa_samples) / dof_samples) * 255;
+      *(rgbIm + (offset + 2)) = ((aa_color_sum.B / aa_samples) / dof_samples) * 255;
 
 
     } // end for i

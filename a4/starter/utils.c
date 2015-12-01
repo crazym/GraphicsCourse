@@ -324,7 +324,7 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
         // update cannonical plane (2x2 square centerd at (0,0)) to a [0,1]-square
         // (a, b) starts from the upper left corner?
         // need to flip the texture img
-        // hmm, or *b = 1 - (p->py + 1) / 2; don;t bother to change :P
+        // hmm, or *b = 1 - (p->py + 1) / 2; don't bother to change :P
         *a = (p->px + 1) / 2;
         *b = (p->py + 1) / 2;
         // assign the rayPosition and transform normal n
@@ -649,6 +649,68 @@ void loadTexture(struct object3D *o, const char *filename, int type, struct text
 }
 
 
+inline void fast_getPixel(double *image, int offset, double *R, double *G, double *B)
+{
+  *R = image[offset];
+  *G = image[offset+1];
+  *B = image[offset+2];
+}
+
+
+inline int fast_floor(double fp) {
+  return (int)(fp + 32768.) - 32768;
+}
+inline int fast_ceil(double fp) {
+  return 32768 - (int)(32768. - fp);
+}
+
+void bilinearInterpolation(struct image *img, double a, double b, double *R, double *G, double *B){
+  a = max(0.0, a);
+  a = min(1.0, a);
+  b = max(0.0, b);
+  b = min(1.0, b);
+  int dim_max = (img->sx * img->sy * 3) -1;
+  double fx = a*(1.0*img->sx);
+  double dx = fx-(int)fx;
+  int ffx = fast_floor(fx);
+  int cfx = fast_ceil(fx);
+  double fy = b*(1.0*img->sy);
+  double dy=fy-(int)fy;
+  int ffy = fast_floor(fy);
+  int cfy = fast_ceil(fy);
+  ffx = max(0, ffx);
+  ffx = min(img->sx, ffx);
+  cfx = max(0, cfx);
+  cfx = min(img->sx, cfx);
+  ffy = max(0, ffy);
+  ffy = min(img->sy, ffy);
+  cfy = max(0, cfy);
+  cfy = min(img->sy, cfy);
+
+  double R1,R2,R3,R4; // Colours at the four neighbours
+  double G1,G2,G3,G4;
+  double B1,B2,B3,B4;
+  // floor/ceil functions are expensive, so precompute along with image offsets
+  fast_getPixel((double *)img->rgbdata, min((ffx + ffy * img->sx)*3, dim_max), &R1,&G1,&B1); // get N1 colours
+  fast_getPixel((double *)img->rgbdata, min((cfx + ffy * img->sx)*3, dim_max), &R2,&G2,&B2); // get N2 colours
+  fast_getPixel((double *)img->rgbdata, min((ffx + cfy * img->sx)*3, dim_max), &R3,&G3,&B3); // get N3 colours
+  fast_getPixel((double *)img->rgbdata, min((cfx + cfy * img->sx)*3, dim_max), &R4,&G4,&B4); // get N4 colours
+  // Interpolate to get T1 and T2 colours
+  double subX = 1-dx;
+  double RT1 = dx*R2 + (subX)*R1;
+  double GT1 = dx*G2 + (subX)*G1;
+  double BT1 = dx*B2 + (subX)*B1;
+  double RT2 = dx*R4 + (subX)*R3;
+  double GT2 = dx*G4 + (subX)*G3;
+  double BT2 = dx*B4 + (subX)*B3;
+  double subY = 1-dy;
+  // Obtain final colour by interpolating between T1 and T2
+  *R=min(1.0,((dy*RT2)+((subY)*RT1)));
+  *G=min(1.0,((dy*GT2)+((subY)*GT1)));
+  *B=min(1.0,((dy*BT2)+((subY)*BT1))); 
+  return;
+}
+
 void texMap(struct image *img, double a, double b, double *R, double *G, double *B)
 {
  /*
@@ -684,11 +746,16 @@ void texMap(struct image *img, double a, double b, double *R, double *G, double 
   pos_b = b * img->sy;
   // if (pos_a!= 0.0 || pos_b!=0.0) fprintf(stderr, "alpha and beta position: %G, %G\n", pos_a, pos_b);
 
-
   // Update image color
   *R = *(img_color + ((pos_a + (pos_b * img->sx)) * 3) + 0);
   *G = *(img_color + ((pos_a + (pos_b * img->sx)) * 3) + 1);
   *B = *(img_color + ((pos_a + (pos_b * img->sx)) * 3) + 2);
+
+  // used bilinear interpolation:
+  // f(x, y) = f(0, 0)(1-x)(1-y) + f(1,0)*x*(1-y) + f(0, 1)(1-x)y + f(1,1)xy
+  // bilinearInterpolation(img, a, b, R, G, B);
+
+
 
   return;
 }
