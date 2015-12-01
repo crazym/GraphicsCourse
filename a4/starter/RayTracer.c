@@ -166,7 +166,7 @@ void buildScene(void)
   insertObject(o,&object_list);
 
   // transparent
-  o=newSphere(.05,.75,.75,.15,.68,.92,0.92,0.3,1.5,3);
+  o=newSphere(.05,.25,.75,.95,.68,.92,0.92,0.3,1.5,3);
   Scale(o,2.5,2.5,1);
   Translate(o,0 ,1.5,3.8);
   invert(&o->T[0][0],&o->Tinv[0][0]);
@@ -221,6 +221,7 @@ void buildScene(void)
   Translate(o,0,12,15);
   invert(&o->T[0][0],&o->Tinv[0][0]);
   loadTexture(o,"./texture/starry_night.ppm", 1, &texture_list);
+  // loadTexture(o,"./texture/landscape.ppm", 1, &texture_list);
   // loadTexture(o,"./texture/stone_normal.ppm", 2, &texture_list);
   insertObject(o,&object_list);
  }
@@ -331,10 +332,10 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
       /* specular: I += rs * Is * max(0, dot(c, m)) */
 
       // Compute perfect mirror direction m = 2* dot(n, s) * n − s
-      temp_dot_value = dot(&light_dir, n);
-      m.px = 2 * temp_dot_value * n->px;
-      m.py = 2 * temp_dot_value * n->py;
-      m.pz = 2 * temp_dot_value * n->pz;
+      // dot_n_s = dot(&light_dir, n);
+      m.px = 2 * dot_n_s * n->px;
+      m.py = 2 * dot_n_s * n->py;
+      m.pz = 2 * dot_n_s * n->pz;
       m.pw = 1;
       subVectors(&light_dir, &m);
       normalize(&m);
@@ -369,13 +370,12 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
 
   if (depth < MAX_DEPTH){
     // compute mirror direction: ms = - 2 * dot(d, n) * n + d
-    double temp_dot_value = dot(&ray->d, n);
+    temp_dot_value = dot(&ray->d, n);
     ms.px = - 2 * temp_dot_value * n->px;
     ms.py = - 2 * temp_dot_value * n->py;
     ms.pz = - 2 * temp_dot_value * n->pz;
     ms.pw = 1;
     // construct new mirror direction
-    // memcpy(&m, &ray->d, sizeof(struct point3D));
     addVectors(&ray->d, &ms);
     normalize(&ms);
 
@@ -400,50 +400,48 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
 
     if (alpha < 1){
       double x,y,z;
-      double index;
-      double m, m2;
-      point3D refract_dir;
+      double index_ratio;
+      double dot_n_d, sqrt_value, temp_value;
+      point3D refr_dir;
+      point3D relative_n;
 
-      // Determine ray enter or exit object
-      if ( dot(n, &ray->d) > 0){
-        index =  obj->r_index;
-        temp_dot_value = dot(n, &ray->d);
+      // refr_dir = index_ratio*d + 
+      //      {index_ratio*dot(n, d) - 
+      //        sqrt[1 - (index_ratio)^2*(1 - dot(n, d)^2)] } * n
+
+      // check if ray entering or exiting the object
+      // calculate corresponding index_ratio and dot(n, d)
+      dot_n_d = dot(n, &ray->d);
+      if ( dot_n_d > 0){
+        // n ,d same direction, exiting the object 
+        index_ratio =  obj->r_index;
+        // set normal to other side of the surface
+        relative_n.px = -n->px;
+        relative_n.py = -n->py;
+        relative_n.pz = -n->pz;
+        relative_n.pw = 1;
+        // update dot_n_d
+        dot_n_d = dot(&relative_n, &ray->d);
       } else{
-        index = 1/obj->r_index;
-        // Set normal to opposite direction
-        point3D opp_n;
-        opp_n.px = -n->px;
-        opp_n.py = -n->py;
-        opp_n.pz = -n->pz;
-        opp_n.pw = 1;
-        temp_dot_value = dot(&opp_n, &ray->d);
+        // entering the object
+        index_ratio = 1/obj->r_index;
+        relative_n.px = n->px;
+        relative_n.py = n->py;
+        relative_n.pz = n->pz;
+        relative_n.pw = 1;
       }
-      m = 1 - pow(index, 2) * (1 - pow(temp_dot_value, 2));
-      // Do refraction only when m >= 0
-      if (m >= 0) {
-        m2 = index * temp_dot_value - pow(m,0.5);
-        // Calculate the direction
-        if (dot(n, &ray->d) > 0){
-          // Ray from outside of object to inside of object
-          x = index * ray->d.px + m2 * n->px;
-          y = index * ray->d.py + m2 * n->py;
-          z = index * ray->d.pz + m2 * n->pz;
-        }
-        else{
-          // Ray from inside of object to outside of object
-          x = index * ray->d.px + m2 * n->px;// * -1;
-          y = index * ray->d.py + m2 * n->py;// * -1;
-          z = index * ray->d.pz + m2 * n->pz;// * -1;
-        }
-        // Refraction Direction
-        refract_dir.px = x;
-        refract_dir.py = y;
-        refract_dir.pz = z;
-        refract_dir.pw = 1;
+      sqrt_value = 1 - pow(index_ratio, 2) * (1 - pow(dot_n_d, 2));
+      if (sqrt_value >= 0) {
 
-        //cast new ray
-        refr_ray = newRay(p, &refract_dir);
-        rayTrace(refr_ray, depth + 1, &E_refr, obj);
+        temp_value = index_ratio * dot_n_d - sqrt(sqrt_value);
+    
+        refr_dir.px = index_ratio * ray->d.px + temp_value * relative_n.px;
+        refr_dir.py = index_ratio * ray->d.py + temp_value * relative_n.py;
+        refr_dir.pz = index_ratio * ray->d.pz + temp_value * relative_n.pz;
+        refr_dir.pw = 1;
+        
+        refr_ray = newRay(p, &refr_dir);
+        rayTrace(refr_ray, depth++, &E_refr, obj);
         
         // Update color for refraction
         E_refr.R = E_refr.R * (1 - alpha);
@@ -764,7 +762,7 @@ int main(int argc, char *argv[])
         pc.pw = 1;
         matVecMult(cam->C2W, &pc);
 
-        // set direction d = p_i,j - e
+        // d = p_i,j - e
         d.px= pc.px - cam->e.px;
         d.py= pc.py - cam->e.py;
         d.pz= pc.pz - cam->e.pz;
