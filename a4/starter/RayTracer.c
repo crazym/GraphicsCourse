@@ -25,8 +25,8 @@
 #define AASamples 5
 #define dof_samples        3
 // larger aperture_size, wider range of depth of fields
-#define aperture_size   6
-#define focal_length     1.5
+#define aperture_size   4
+#define focal_length     2.5
 
 // A couple of global structures and data: An object list, a light list, and the
 // maximum recursion depth
@@ -782,10 +782,14 @@ int main(int argc, char *argv[])
         d.pw= pc.pw - cam->e.pw;
         normalize(&d);
 
-          // // create a ray from camera to that point and trace
-          // ray = newRay(&pc, &d); 
-          // rayTrace(ray, 0, &col, NULL); 
+        // create a ray from camera to that point and trace
+        // ray = newRay(&pc, &d); 
+        // rayTrace(ray, 0, &col, NULL); 
 
+        // aa_color_sum.R += col.R;
+        // aa_color_sum.G += col.G;
+        // aa_color_sum.B += col.B;
+      
         /* depth of field:
            Given an aperture size and a focal plain:
            Shoot an ray through the sampled point on the image plain, pc, 

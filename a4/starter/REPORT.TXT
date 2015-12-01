@@ -28,7 +28,7 @@ ________________________________________________________________________________
 * Alpha mapping:
     utils.c - alphaMap(); RayTracer.c - rtShade() uses either obj->alpha or alpha at (a, b)   
 * Depth-of-field:
-
+    RayTracer.c - main() - loop at random cam & focal hit samples and take the mean color
 
 
 - Existing problems:

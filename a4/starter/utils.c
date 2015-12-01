@@ -649,66 +649,11 @@ void loadTexture(struct object3D *o, const char *filename, int type, struct text
 }
 
 
-inline void fast_getPixel(double *image, int offset, double *R, double *G, double *B)
+inline void getXYColor(double *image, int offset, double *R, double *G, double *B)
 {
   *R = image[offset];
   *G = image[offset+1];
   *B = image[offset+2];
-}
-
-
-inline int fast_floor(double fp) {
-  return (int)(fp + 32768.) - 32768;
-}
-inline int fast_ceil(double fp) {
-  return 32768 - (int)(32768. - fp);
-}
-
-void bilinearInterpolation(struct image *img, double a, double b, double *R, double *G, double *B){
-  a = max(0.0, a);
-  a = min(1.0, a);
-  b = max(0.0, b);
-  b = min(1.0, b);
-  int dim_max = (img->sx * img->sy * 3) -1;
-  double fx = a*(1.0*img->sx);
-  double dx = fx-(int)fx;
-  int ffx = fast_floor(fx);
-  int cfx = fast_ceil(fx);
-  double fy = b*(1.0*img->sy);
-  double dy=fy-(int)fy;
-  int ffy = fast_floor(fy);
-  int cfy = fast_ceil(fy);
-  ffx = max(0, ffx);
-  ffx = min(img->sx, ffx);
-  cfx = max(0, cfx);
-  cfx = min(img->sx, cfx);
-  ffy = max(0, ffy);
-  ffy = min(img->sy, ffy);
-  cfy = max(0, cfy);
-  cfy = min(img->sy, cfy);
-
-  double R1,R2,R3,R4; // Colours at the four neighbours
-  double G1,G2,G3,G4;
-  double B1,B2,B3,B4;
-  // floor/ceil functions are expensive, so precompute along with image offsets
-  fast_getPixel((double *)img->rgbdata, min((ffx + ffy * img->sx)*3, dim_max), &R1,&G1,&B1); // get N1 colours
-  fast_getPixel((double *)img->rgbdata, min((cfx + ffy * img->sx)*3, dim_max), &R2,&G2,&B2); // get N2 colours
-  fast_getPixel((double *)img->rgbdata, min((ffx + cfy * img->sx)*3, dim_max), &R3,&G3,&B3); // get N3 colours
-  fast_getPixel((double *)img->rgbdata, min((cfx + cfy * img->sx)*3, dim_max), &R4,&G4,&B4); // get N4 colours
-  // Interpolate to get T1 and T2 colours
-  double subX = 1-dx;
-  double RT1 = dx*R2 + (subX)*R1;
-  double GT1 = dx*G2 + (subX)*G1;
-  double BT1 = dx*B2 + (subX)*B1;
-  double RT2 = dx*R4 + (subX)*R3;
-  double GT2 = dx*G4 + (subX)*G3;
-  double BT2 = dx*B4 + (subX)*B3;
-  double subY = 1-dy;
-  // Obtain final colour by interpolating between T1 and T2
-  *R=min(1.0,((dy*RT2)+((subY)*RT1)));
-  *G=min(1.0,((dy*GT2)+((subY)*GT1)));
-  *B=min(1.0,((dy*BT2)+((subY)*BT1))); 
-  return;
 }
 
 void texMap(struct image *img, double a, double b, double *R, double *G, double *B)
@@ -739,24 +684,68 @@ void texMap(struct image *img, double a, double b, double *R, double *G, double 
  // *(B)=0;  // texture colour at (a,b)
  // return;
 
-  int pos_a, pos_b;
-  double *img_color=(double *)img->rgbdata;
+  // int pos_a, pos_b;
+  // double *img_color=(double *)img->rgbdata;
 
-  pos_a = a * img->sx;
-  pos_b = b * img->sy;
-  // if (pos_a!= 0.0 || pos_b!=0.0) fprintf(stderr, "alpha and beta position: %G, %G\n", pos_a, pos_b);
+  // pos_a = a * img->sx;
+  // pos_b = b * img->sy;
+  // // if (pos_a!= 0.0 || pos_b!=0.0) fprintf(stderr, "alpha and beta position: %G, %G\n", pos_a, pos_b);
 
-  // Update image color
-  *R = *(img_color + ((pos_a + (pos_b * img->sx)) * 3) + 0);
-  *G = *(img_color + ((pos_a + (pos_b * img->sx)) * 3) + 1);
-  *B = *(img_color + ((pos_a + (pos_b * img->sx)) * 3) + 2);
+  // // Update image color
+  // *R = *(img_color + ((pos_a + (pos_b * img->sx)) * 3) + 0);
+  // *G = *(img_color + ((pos_a + (pos_b * img->sx)) * 3) + 1);
+  // *B = *(img_color + ((pos_a + (pos_b * img->sx)) * 3) + 2);
 
   // used bilinear interpolation:
-  // f(x, y) = f(0, 0)(1-x)(1-y) + f(1,0)*x*(1-y) + f(0, 1)(1-x)y + f(1,1)xy
-  // bilinearInterpolation(img, a, b, R, G, B);
+  // reference: https://en.wikipedia.org/wiki/Bilinear_interpolation
+  int dim_max = (img->sx * img->sy * 3) -1;
+  double *img_color=(double *)img->rgbdata;
+  
+  double x = a*(1.0*img->sx);
+  // double dx = x-(int)x;
+  int x1 = floor(x);
+  int x2 = ceil(x);
+  double y = b*(1.0*img->sy);
+  double dy=y-(int)y;
+  int y1 = floor(y);
+  int y2 = ceil(y);
+  
+  x1 = min(img->sx, max(0, x1));
+  x2 = min(img->sx, max(0, x2));
+  y1 = min(img->sy, max(0, y1));
+  y2 = min(img->sy, max(0, y2));
 
+  // color at (x1, y1), (x1, y2), (x2, y1), (x2, y2):
+  //     Q11, Q12, Q21, Q22
+  double R11, R12, R21, R22;
+  double G11, G12, G21, G22;
+  double B11, B12, B21, B22;
+  
+  // get RGB values at Q11, Q12, Q21, Q22
+  getXYColor(img_color, min((x1 + y1 * img->sx)*3, dim_max), &R11,&G11,&B11); 
+  getXYColor(img_color, min((x2 + y1 * img->sx)*3, dim_max), &R12,&G12,&B12);
+  getXYColor(img_color, min((x1 + y2 * img->sx)*3, dim_max), &R21,&G21,&B21);
+  getXYColor(img_color, min((x2 + y2 * img->sx)*3, dim_max), &R22,&G22,&B22);
 
+  // do linear interpolation in the x-direction to get f(x, y1) and f(x, y2) colours
+  double x2_ratio = (x2-x)/(x2-x1);
+  double x1_ratio = (x-x1)/(x2-x1);
+  // f(x, y1)
+  double RXY1 = x2_ratio*R11 + x1_ratio*R21;
+  double GXY1 = x2_ratio*G11 + x1_ratio*G21;
+  double BXY1 = x2_ratio*B11 + x1_ratio*B21;
+  // f(x, y2)
+  double RXY2 = x2_ratio*R12 + x1_ratio*R22;
+  double GXY2 = x2_ratio*G12 + x1_ratio*G22;
+  double BXY2 = x2_ratio*B12 + x1_ratio*B22;
 
+  // interpolating in the y-direction to obtain the desired estimate f(x, y)
+  double y2_ratio = (y2-y)/(y2-y1);
+  double y1_ratio = (y-y1)/(y2-y1);
+  *R=min(1.0,(y2_ratio*RXY1+y1_ratio*RXY2));
+  *G=min(1.0,(y2_ratio*GXY1+y1_ratio*GXY2));
+  *B=min(1.0,(y2_ratio*BXY1+y1_ratio*BXY2));
+  
   return;
 }
 
